@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   PALET 4 WARNA (fokus 1 warna per bagian):
+   1. HIJAU  #068a57  -> warna utama/brand (navigasi, tombol utama, aksen)
+   2. SLATE  #334155  -> netral (teks, background, border)
+   3. AMBER  #f59e0b  -> perhatian (badge penting, status nonaktif)
+   4. MERAH  #e11d48  -> bahaya (tombol hapus, pesan error)
+   ===================================================================== */
+
+:root {
+  --background: #f8fafc;
+  --foreground: #1e293b;
+}
+
+@theme {
+  /* Skala warna brand hijau (#068a57) */
+  --color-brand-50: #e7f6f0;
+  --color-brand-100: #c6ead9;
+  --color-brand-200: #9dd9be;
+  --color-brand-300: #5fc79a;
+  --color-brand-400: #14b87e;
+  --color-brand-500: #068a57;
+  --color-brand-600: #057046;
+  --color-brand-700: #05603c;
+  --color-brand-800: #054e32;
+  --color-brand-900: #043f29;
+
+  --color-brand: #068a57;
+  --color-brand-dark: #057046;
+  --color-brand-light: #0aa76b;
+
+  --color-background: #f8fafc;
+  --color-foreground: #1e293b;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: #f8fafc;
+  color: #1e293b;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar: warna utama saja */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #0aa76b;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #068a57;
+  background-clip: content-box;
+}
+
+/* Aksen warna utama (satu warna solid) */
+.brand-gradient {
+  background-color: #068a57;
+}
+.brand-gradient:hover {
+  background-color: #057046;
+}
+.sidebar-gradient {
+  background-color: #057046;
+}
+
+/* Animasi masuk halus */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fadeUp 0.35s ease-out both;
+}
