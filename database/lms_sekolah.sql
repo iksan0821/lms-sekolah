@@ -1,6 +1,6 @@
 -- =============================================================
 -- DATABASE LMS SEKOLAH
--- Dibuat untuk XAMPP (MariaDB / MySQL)
+-- Dibuat untuk Laragon (MySQL 8.x)
 -- Struktur mencakup role: admin, kepsek, kurikulum, guru, siswa
 -- =============================================================
 

@@ -6,6 +6,7 @@ import { PageTitle, Table, EmptyRow, Loading } from "@/components/monitor-ui";
 export default function DownloadNilai() {
   const [opsi, setOpsi] = useState({ kelas: [], mapel: [] });
   const [mapelId, setMapelId] = useState("");
+  const [kelasId, setKelasId] = useState("");
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pesan, setPesan] = useState(null);
@@ -24,7 +25,8 @@ export default function DownloadNilai() {
     }
     setLoading(true);
     setPesan(null);
-    const res = await fetch(`/api/monitor?bagian=nilai-detail&mapel_id=${mapelId}`);
+    const url = `/api/monitor?bagian=nilai-detail&mapel_id=${mapelId}` + (kelasId ? `&kelas_id=${kelasId}` : "");
+    const res = await fetch(url);
     const d = await res.json();
     setLoading(false);
     if (!d.success) {
@@ -32,7 +34,7 @@ export default function DownloadNilai() {
       return;
     }
     setRows(d.data);
-    if (d.data.length === 0) setPesan({ tipe: "info", text: "Belum ada nilai untuk mapel ini." });
+    if (d.data.length === 0) setPesan({ tipe: "info", text: "Belum ada nilai untuk pilihan ini." });
   }
 
   function downloadCSV() {
@@ -41,6 +43,7 @@ export default function DownloadNilai() {
       return;
     }
     const mapelNama = opsi.mapel.find((m) => String(m.id) === String(mapelId))?.nama || "mapel";
+    const kelasNama = opsi.kelas.find((k) => String(k.id) === String(kelasId))?.nama || "";
     const header = ["No", "Nama Siswa", "NIS", "Kelas", "Tugas", "Harian", "Ujian", "Rata-rata"];
     const baris = rows.map((r, i) =>
       [i + 1, r.siswa, r.nis || "-", r.kelas || "-", r.tugas ?? "-", r.harian ?? "-", r.ujian ?? "-", r.rata ?? "-"]
@@ -52,10 +55,11 @@ export default function DownloadNilai() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `nilai_${mapelNama.replace(/\s+/g, "_")}.csv`;
+    const bagianNama = kelasNama ? `${mapelNama}_${kelasNama}` : mapelNama;
+    a.download = `nilai_${bagianNama.replace(/\s+/g, "_")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    setPesan({ tipe: "info", text: `Nilai ${mapelNama} berhasil diunduh (CSV).` });
+    setPesan({ tipe: "info", text: `Nilai ${bagianNama} berhasil diunduh (CSV).` });
   }
 
   return (
@@ -77,6 +81,19 @@ export default function DownloadNilai() {
               <option value="">-- Pilih Mapel --</option>
               {opsi.mapel.map((m) => (
                 <option key={m.id} value={m.id}>{m.nama}</option>
+              ))}
+            </select>
+          </div>
+          <div className="min-w-[180px] flex-1">
+            <label className="mb-1 block text-xs font-medium text-slate-600">Pilih Kelas</label>
+            <select
+              value={kelasId}
+              onChange={(e) => setKelasId(e.target.value)}
+              className="w-full rounded-lg border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand"
+            >
+              <option value="">-- Semua Kelas --</option>
+              {opsi.kelas.map((k) => (
+                <option key={k.id} value={k.id}>{k.nama}</option>
               ))}
             </select>
           </div>

@@ -101,25 +101,29 @@ export async function GET(request) {
       return NextResponse.json({ success: false, message: "Akses ditolak." }, { status: 403 });
     }
     const mapelId = searchParams.get("mapel_id");
+    const kelasId = searchParams.get("kelas_id");
     if (!mapelId) {
       return NextResponse.json({ success: false, message: "Pilih mapel." }, { status: 400 });
     }
-    const rows = await query(
-      `SELECT u.nama AS siswa, u.nis,
-              k.nama AS kelas,
-              MAX(CASE WHEN nv.jenis='tugas' THEN nv.nilai END) AS tugas,
-              MAX(CASE WHEN nv.jenis='harian' THEN nv.nilai END) AS harian,
-              MAX(CASE WHEN nv.jenis='ujian' THEN nv.nilai END) AS ujian,
-              ROUND(AVG(nv.nilai),1) AS rata
-       FROM nilai nv
-       JOIN users u ON u.id = nv.siswa_id
-       LEFT JOIN kelas k ON k.id = nv.kelas_id
-       JOIN mata_pelajaran mp ON mp.id = nv.mapel_id
-       WHERE nv.mapel_id = ?
-       GROUP BY nv.siswa_id
-       ORDER BY u.nama`,
-      [mapelId]
-    );
+
+    let sql = `SELECT u.nama AS siswa, u.nis,
+                      k.nama AS kelas,
+                      MAX(CASE WHEN nv.jenis='tugas' THEN nv.nilai END) AS tugas,
+                      MAX(CASE WHEN nv.jenis='harian' THEN nv.nilai END) AS harian,
+                      MAX(CASE WHEN nv.jenis='ujian' THEN nv.nilai END) AS ujian,
+                      ROUND(AVG(nv.nilai),1) AS rata
+               FROM nilai nv
+               JOIN users u ON u.id = nv.siswa_id
+               LEFT JOIN kelas k ON k.id = nv.kelas_id
+               WHERE nv.mapel_id = ?`;
+    const params = [mapelId];
+    if (kelasId) {
+      sql += " AND nv.kelas_id = ?";
+      params.push(kelasId);
+    }
+    sql += " GROUP BY nv.siswa_id, u.nama, u.nis, k.nama ORDER BY k.nama, u.nama";
+
+    const rows = await query(sql, params);
     return NextResponse.json({ success: true, data: rows });
   }
 

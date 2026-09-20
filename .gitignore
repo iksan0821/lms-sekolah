@@ -35,6 +35,13 @@ yarn-error.log*
 
 # vercel
 .vercel
+# file sementara (dev log, test script, screenshot)
+_deverr.log
+_devout.log
+.._dev*.log
+_*.mjs
+_*.png
+_*.ps1
 
 # typescript
 *.tsbuildinfo

@@ -1,6 +1,6 @@
 import mysql from "mysql2/promise";
 
-// Pool koneksi ke database XAMPP (MySQL/MariaDB).
+// Pool koneksi ke database MySQL (Laragon).
 // Gunakan global agar tidak membuat pool baru setiap hot-reload di mode dev.
 let pool = global._mysqlPool;
 

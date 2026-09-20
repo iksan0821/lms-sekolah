@@ -12,7 +12,7 @@ export default function PengaturanPage() {
           {[
             ["Aplikasi", "LMS Sekolah"],
             ["Framework", "Next.js (App Router)"],
-            ["Database", "MySQL / MariaDB (XAMPP)"],
+            ["Database", "MySQL / MariaDB (Laragon)"],
             ["Autentikasi", "JWT Session Cookie"],
             ["Role tersedia", "Admin, Kepsek, Kurikulum, Guru, Siswa"],
           ].map(([k, v]) => (

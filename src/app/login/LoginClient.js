@@ -136,7 +136,7 @@ export default function LoginClient() {
       </div>
 
       <p className="mt-6 text-center text-xs text-slate-400">
-        (c) {new Date().getFullYear()} LMS Sekolah - Next.js + MySQL (XAMPP)
+        (c) {new Date().getFullYear()} LMS Sekolah - Next.js + MySQL (Laragon)
       </p>
     </div>
   );

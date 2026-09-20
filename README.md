@@ -1,13 +1,12 @@
-﻿# LMS Sekolah — Next.js + MySQL (XAMPP)
+# LMS Sekolah - Next.js + MySQL (Laragon)
 
 Sistem Learning Management System (LMS) sekolah dengan multi-role:
 **Admin, Kepala Sekolah, Kurikulum, Guru, dan Siswa**.
-Tahap saat ini: **fokus role Admin** (login + dashboard + manajemen user).
 
 ## Teknologi
 
 - **Next.js 16** (App Router, Turbopack) + React 19 + Tailwind CSS 4
-- **MySQL / MariaDB** dari XAMPP
+- **MySQL 8.x** dari Laragon
 - **mysql2** (connection pool), **bcryptjs** (hash password), **jose** (JWT session)
 
 ## Struktur Database
@@ -15,15 +14,16 @@ Tahap saat ini: **fokus role Admin** (login + dashboard + manajemen user).
 File SQL: `database/lms_sekolah.sql`
 
 Tabel: `roles`, `tahun_ajaran`, `jurusan`, `users`, `kelas`, `mata_pelajaran`,
-`siswa`, `guru_mapel`, `pengumuman`,log_aktivitas`.
+`siswa`, `guru_mapel`, `pengumuman`, `log_aktivitas`, `materi`, `tugas`,
+`jadwal_pelajaran`, `ujian_online`, `nilai`.
 
 ### Import Database
 
-1. Jalankan **MySQL** dari XAMPP Control Panel.
+1. Jalankan **MySQL** dari Laragon (Start All).
 2. Double-click `database/import.bat`, **atau** jalankan perintah:
 
 ```powershell
-Get-Content database/lms_sekolah.sql -Raw | & "C:\xampp\mysql\bin\mysql.exe" -u root
+Get-Content database/lms_sekolah.sql -Raw | & "C:\laragon\bin\mysql\mysql-8.4.3-winx64\bin\mysql.exe" -u root
 ```
 
 ## Menjalankan Aplikasi
@@ -56,18 +56,24 @@ DB_NAME=lms_sekolah
 JWT_SECRET=ubah-menjadi-random-string
 ```
 
-## Fitur yang Sudah Jadi (Role Admin)
+## Fitur
 
-- Login dengan JWT session cookie (httpOnly), validasi role & status akun
-- Dashboard statistik: total pengguna, kelas, mapel, distribusi per role, log aktivitas
-- Manajemen User (CRUD): tambah/edit/hapus, filter per role, pencarian
-- Halaman data: Siswa, Guru, Kelas, Mata Pelajaran, Pengumuman, Pengaturan
-- Middleware proteksi route + redirect otomatis sesuai role
-- Log aktivitas & waktu login terakhir
+### Role Admin (CRUD penuh)
+- Login JWT session cookie (httpOnly) + validasi role & status akun
+- Dashboard statistik + log aktivitas
+- Manajemen User (CRUD), Data Siswa, Data Guru, Kelas, Mata Pelajaran
+- Pantau Akun (mode lihat saja untuk kepsek & kurikulum)
+- Pengumuman & Pengaturan
+
+### Role Kepala Sekolah & Kurikulum (pantau, tanpa CRUD)
+- Login -> Dashboard
+- Kinerja Guru
+- Tugas & Materi
+- Pantau Ujian Online
+- Pantau Jadwal Pelajaran
+- **Download Nilai** (khusus Kurikulum): pilih mapel + kelas, unduh CSV per mapel.
 
 ## Rencana Selanjutnya
 
-- Modul **Kepsek**: laporan & statistik sekolah
-- Modul **Kurikulum**: kelola mapel, jadwal, tahun ajaran
-- Modul **Guru**: kelas, materi, tugas, penilaian
+- Modul **Guru**: kelas, materi, tugas, penilaian (CRUD)
 - Modul **Siswa**: akses materi & pengumpulan tugas
