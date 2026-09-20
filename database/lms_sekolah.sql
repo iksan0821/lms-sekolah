@@ -238,3 +238,191 @@ INSERT INTO `guru_mapel` (`guru_id`, `mapel_id`, `kelas_id`) VALUES
 
 INSERT INTO `pengumuman` (`judul`, `isi`, `target_role`, `created_by`) VALUES
 ('Selamat Datang di LMS Sekolah', 'Sistem Learning Management System resmi sekolah telah aktif. Silakan gunakan sesuai peran Anda.', 'semua', 1);
+
+-- =============================================================
+-- TAMBAHAN untuk role GURU: tabel absensi + perbaikan data
+-- =============================================================
+
+USE `lms_sekolah`;
+
+-- -------------------------------------------------------------
+-- Absensi / kehadiran siswa
+-- -------------------------------------------------------------
+DROP TABLE IF EXISTS `absensi`;
+CREATE TABLE `absensi` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `siswa_id` INT UNSIGNED NOT NULL,
+  `kelas_id` INT UNSIGNED DEFAULT NULL,
+  `mapel_id` INT UNSIGNED DEFAULT NULL,
+  `guru_id` INT UNSIGNED DEFAULT NULL,
+  `tanggal` DATE NOT NULL,
+  `status` ENUM('hadir','izin','sakit','alpa') NOT NULL DEFAULT 'hadir',
+  `keterangan` VARCHAR(255) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_absensi_siswa` (`siswa_id`),
+  KEY `fk_absensi_kelas` (`kelas_id`),
+  KEY `fk_absensi_mapel` (`mapel_id`),
+  KEY `fk_absensi_guru` (`guru_id`),
+  CONSTRAINT `fk_absensi_siswa` FOREIGN KEY (`siswa_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_absensi_kelas` FOREIGN KEY (`kelas_id`) REFERENCES `kelas` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_absensi_mapel` FOREIGN KEY (`mapel_id`) REFERENCES `mata_pelajaran` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_absensi_guru` FOREIGN KEY (`guru_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------
+-- Soal (untuk ujian / latihan soal)
+-- -------------------------------------------------------------
+DROP TABLE IF EXISTS `soal`;
+CREATE TABLE `soal` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ujian_id` INT UNSIGNED DEFAULT NULL,
+  `pertanyaan` TEXT NOT NULL,
+  `pilihan_a` VARCHAR(255) DEFAULT NULL,
+  `pilihan_b` VARCHAR(255) DEFAULT NULL,
+  `pilihan_c` VARCHAR(255) DEFAULT NULL,
+  `pilihan_d` VARCHAR(255) DEFAULT NULL,
+  `jawaban_benar` ENUM('A','B','C','D') DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `fk_soal_ujian` (`ujian_id`),
+  CONSTRAINT `fk_soal_ujian` FOREIGN KEY (`ujian_id`) REFERENCES `ujian_online` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------
+-- Kolom tambahan pada tabel materi (tipe konten)
+-- -------------------------------------------------------------
+ALTER TABLE `materi` ADD COLUMN `tipe` ENUM('teks','file','video','link') NOT NULL DEFAULT 'teks' AFTER `deskripsi`;
+
+-- -------------------------------------------------------------
+-- Data awal: kaitkan siswa ke kelas & tugaskan guru ke mapel
+-- -------------------------------------------------------------
+UPDATE `siswa` SET `kelas_id` = 8 WHERE `user_id` = 13 AND `kelas_id` IS NULL;
+
+-- Guru 12 = Alsya Zeinah (Matematika & B.Indonesia), Guru 14 = Ayu Budi (B.Indonesia & B.Inggris)
+INSERT INTO `guru_mapel` (`guru_id`, `mapel_id`, `kelas_id`) VALUES
+(12, 1, 8),
+(12, 2, 8),
+(14, 2, 8),
+(14, 8, 8);
+
+-- Absensi contoh (siswa 13)
+INSERT INTO `absensi` (`siswa_id`, `kelas_id`, `mapel_id`, `guru_id`, `tanggal`, `status`, `keterangan`) VALUES
+(13, 8, 1, 12, '2025-02-10', 'hadir', NULL),
+(13, 8, 1, 12, '2025-02-17', 'hadir', NULL),
+(13, 8, 2, 12, '2025-02-11', 'izin', 'Acara keluarga'),
+(13, 8, 2, 12, '2025-02-18', 'hadir', NULL),
+(13, 8, 8, 14, '2025-02-12', 'sakit', 'Demam');
+
+-- Tambahkan 1 siswa lagi supaya absensi lebih hidup
+INSERT INTO `users` (`nama`, `username`, `email`, `password`, `role_id`, `nis`, `jenis_kelamin`, `status`)
+SELECT 'Dewi Anggraini', 'dewi', 'dewi@lmssekolah.sch.id', password, 5, '123456790', 'P', 'aktif'
+FROM users WHERE username = 'siswa' LIMIT 1;
+
+INSERT INTO `siswa` (`user_id`, `kelas_id`, `nis`, `nama_wali`)
+SELECT id, 8, '123456790', 'ibu dewi' FROM users WHERE username = 'dewi' LIMIT 1;
+
+-- Absensi untuk Dewi
+INSERT INTO `absensi` (`siswa_id`, `kelas_id`, `mapel_id`, `guru_id`, `tanggal`, `status`, `keterangan`)
+SELECT id, 8, 1, 12, '2025-02-10', 'hadir', NULL FROM users WHERE username = 'dewi' LIMIT 1;
+
+-- Nilai untuk Dewi
+INSERT INTO `nilai` (`siswa_id`, `mapel_id`, `kelas_id`, `jenis`, `nilai`)
+SELECT id, 1, 8, 'harian', 88.00 FROM users WHERE username = 'dewi' LIMIT 1;
+INSERT INTO `nilai` (`siswa_id`, `mapel_id`, `kelas_id`, `jenis`, `nilai`)
+SELECT id, 1, 8, 'tugas', 92.00 FROM users WHERE username = 'dewi' LIMIT 1;
+
+-- Soal contoh untuk ujian yang sudah ada (ujian id 1)
+INSERT INTO `soal` (`ujian_id`, `pertanyaan`, `pilihan_a`, `pilihan_b`, `pilihan_c`, `pilihan_d`, `jawaban_benar`) VALUES
+(1, 'Hasil dari 2x + 3 = 11, nilai x adalah...', '4', '5', '6', '7', 'A'),
+(1, 'Bentuk sederhana dari (a+b)^2 adalah...', 'a^2+b^2', 'a^2+2ab+b^2', 'a^2-2ab+b^2', '2ab', 'B');
+
+-- =============================================================
+-- TAMBAHAN agar soal/tugas yang dibuat guru BISA DIKERJAKAN SISWA
+-- =============================================================
+
+USE `lms_sekolah`;
+
+-- -------------------------------------------------------------
+-- Kolom tipe pada tugas: 'tugas' (tulis) atau 'ulangan' / 'latihan'
+-- -------------------------------------------------------------
+ALTER TABLE `tugas`
+  ADD COLUMN `tipe` ENUM('tugas','ulangan','latihan') NOT NULL DEFAULT 'tugas' AFTER `deskripsi`;
+
+-- -------------------------------------------------------------
+-- Jawaban siswa untuk ujian online (per soal)
+-- -------------------------------------------------------------
+DROP TABLE IF EXISTS `jawaban_siswa`;
+CREATE TABLE `jawaban_siswa` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ujian_id` INT UNSIGNED NOT NULL,
+  `soal_id` INT UNSIGNED NOT NULL,
+  `siswa_id` INT UNSIGNED NOT NULL,
+  `jawaban` ENUM('A','B','C','D') DEFAULT NULL,
+  `benar` TINYINT(1) DEFAULT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_jawaban` (`ujian_id`, `soal_id`, `siswa_id`),
+  KEY `fk_jawaban_ujian` (`ujian_id`),
+  KEY `fk_jawaban_soal` (`soal_id`),
+  KEY `fk_jawaban_siswa` (`siswa_id`),
+  CONSTRAINT `fk_jawaban_ujian` FOREIGN KEY (`ujian_id`) REFERENCES `ujian_online` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_jawaban_soal` FOREIGN KEY (`soal_id`) REFERENCES `soal` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_jawaban_siswa` FOREIGN KEY (`siswa_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------
+-- Pengumpulan tugas oleh siswa
+-- -------------------------------------------------------------
+DROP TABLE IF EXISTS `pengumpulan_tugas`;
+CREATE TABLE `pengumpulan_tugas` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tugas_id` INT UNSIGNED NOT NULL,
+  `siswa_id` INT UNSIGNED NOT NULL,
+  `jawaban_teks` TEXT DEFAULT NULL,
+  `file_url` VARCHAR(255) DEFAULT NULL,
+  `nilai` DECIMAL(5,2) DEFAULT NULL,
+  `catatan_guru` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM('dikumpul','dinilai') NOT NULL DEFAULT 'dikumpul',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_pengumpulan` (`tugas_id`, `siswa_id`),
+  KEY `fk_pt_tugas` (`tugas_id`),
+  KEY `fk_pt_siswa` (`siswa_id`),
+  CONSTRAINT `fk_pt_tugas` FOREIGN KEY (`tugas_id`) REFERENCES `tugas` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pt_siswa` FOREIGN KEY (`siswa_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -------------------------------------------------------------
+-- Tandai tugas contoh sebagai 'tugas' biasa (data lama)
+-- -------------------------------------------------------------
+UPDATE `tugas` SET `tipe` = 'tugas' WHERE `tipe` IS NULL OR `tipe` = '';
+
+-- =============================================================
+-- TAMBAHAN untuk role SISWA
+-- =============================================================
+
+USE `lms_sekolah`;
+
+-- Tipe pengumpulan tugas: kirim link atau unggah file (PDF)
+ALTER TABLE `pengumpulan_tugas`
+  ADD COLUMN `tipe_pengumpulan` ENUM('link','file') NOT NULL DEFAULT 'link' AFTER `file_url`;
+
+-- Nilai ujian siswa (rekap per ujian)
+DROP TABLE IF EXISTS `hasil_ujian`;
+CREATE TABLE `hasil_ujian` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `ujian_id` INT UNSIGNED NOT NULL,
+  `siswa_id` INT UNSIGNED NOT NULL,
+  `jumlah_benar` INT UNSIGNED NOT NULL DEFAULT 0,
+  `jumlah_soal` INT UNSIGNED NOT NULL DEFAULT 0,
+  `nilai` DECIMAL(5,2) DEFAULT NULL,
+  `selesai` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_hasil` (`ujian_id`, `siswa_id`),
+  KEY `fk_hasil_ujian` (`ujian_id`),
+  KEY `fk_hasil_siswa` (`siswa_id`),
+  CONSTRAINT `fk_hasil_ujian` FOREIGN KEY (`ujian_id`) REFERENCES `ujian_online` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_hasil_siswa` FOREIGN KEY (`siswa_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
