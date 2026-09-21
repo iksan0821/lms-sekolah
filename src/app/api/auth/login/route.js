@@ -5,7 +5,7 @@ import { signSession, COOKIE_NAME, ROLE_HOME } from "@/lib/auth";
 
 export async function POST(request) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, tingkat, jurusan_id } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json(
@@ -48,6 +48,36 @@ export async function POST(request) {
       );
     }
 
+    // Siswa wajib memilih tingkat kelas & jurusan, lalu divalidasi
+    // terhadap data kelas yang terdaftar di sistem.
+    let kelasInfo = null;
+    if (user.role === "siswa") {
+      if (!tingkat || !jurusan_id) {
+        return NextResponse.json(
+          { success: false, message: "Kelas (tingkat) dan jurusan wajib dipilih." },
+          { status: 400 }
+        );
+      }
+
+      const kelasRows = await query(
+        `SELECT k.id, k.nama, k.tingkat, k.jurusan_id, j.nama AS jurusan
+         FROM kelas k
+         LEFT JOIN jurusan j ON j.id = k.jurusan_id
+         WHERE k.tingkat = ? AND k.jurusan_id = ?
+         ORDER BY k.nama
+         LIMIT 1`,
+        [String(tingkat), jurusan_id]
+      );
+
+      if (kelasRows.length === 0) {
+        return NextResponse.json(
+          { success: false, message: "Kombinasi kelas dan jurusan tidak ditemukan." },
+          { status: 400 }
+        );
+      }
+      kelasInfo = kelasRows[0];
+    }
+
     // Catat waktu login & log aktivitas
     await query("UPDATE users SET last_login = NOW() WHERE id = ?", [user.id]);
     await query(
@@ -65,6 +95,9 @@ export async function POST(request) {
       username: user.username,
       role: user.role,
       role_nama: user.role_nama,
+      ...(kelasInfo
+        ? { kelas_id: kelasInfo.id, kelas: kelasInfo.nama, jurusan_id: kelasInfo.jurusan_id, jurusan: kelasInfo.jurusan }
+        : {}),
     });
 
     const response = NextResponse.json({
@@ -76,6 +109,9 @@ export async function POST(request) {
         username: user.username,
         role: user.role,
         role_nama: user.role_nama,
+        ...(kelasInfo
+          ? { kelas_id: kelasInfo.id, kelas: kelasInfo.nama, jurusan_id: kelasInfo.jurusan_id, jurusan: kelasInfo.jurusan }
+          : {}),
       },
       redirect: ROLE_HOME[user.role] || "/",
     });
@@ -91,8 +127,9 @@ export async function POST(request) {
     return response;
   } catch (err) {
     console.error("Login error:", err);
+    const kode = err && err.code ? ` (${err.code})` : "";
     return NextResponse.json(
-      { success: false, message: "Terjadi kesalahan pada server." },
+      { success: false, message: `Terjadi kesalahan pada server${kode}.` },
       { status: 500 }
     );
   }

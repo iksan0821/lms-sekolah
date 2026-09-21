@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginClient() {
@@ -10,16 +10,50 @@ export default function LoginClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [role, setRole] = useState("");
+  const [tingkat, setTingkat] = useState("");
+  const [jurusanId, setJurusanId] = useState("");
+  const [opsi, setOpsi] = useState({ jurusan: [], tingkat: [] });
+
+  // Muat opsi kelas (tingkat) & jurusan untuk form login siswa.
+  useEffect(() => {
+    fetch("/api/auth/opsi")
+      .then((r) => r.json())
+      .then((d) => d.success && setOpsi(d.data))
+      .catch(() => {});
+  }, []);
+
+  const isSiswa = role === "siswa";
+  const tingkatOpsi = opsi.tingkat.length ? opsi.tingkat : ["10", "11", "12"];
+  // Fallback bila endpoint opsi belum/tidak memuat data, agar jurusan tetap bisa dipilih.
+  const jurusanOpsi = opsi.jurusan.length
+    ? opsi.jurusan
+    : [
+        { id: 1, kode: "BDR", nama: "Bisnis Digital dan Retail" },
+        { id: 2, kode: "DKV", nama: "Desain Komunikasi Visual" },
+        { id: 3, kode: "MPLB", nama: "Manajemen Perkantoran dan Layanan Bisnis" },
+        { id: 4, kode: "PH", nama: "Perhotelan" },
+        { id: 5, kode: "PPLG", nama: "Pengembangan Perangkat Lunak dan Gim" },
+        { id: 6, kode: "TJKT", nama: "Teknik Jaringan Komputer dan Telekomunikasi" },
+      ];
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    if (isSiswa && (!tingkat || !jurusanId)) {
+      setError("Kelas (tingkat) dan jurusan wajib dipilih.");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username,
+          password,
+          ...(isSiswa ? { tingkat, jurusan_id: jurusanId } : {}),
+        }),
       });
       const data = await res.json();
       if (!data.success) {
@@ -36,11 +70,11 @@ export default function LoginClient() {
   }
 
   const demo = [
-    { role: "Admin", u: "admin", p: "admin123" },
-    { role: "Kepsek", u: "kepsek", p: "kepsek123" },
-    { role: "Kurikulum", u: "kurikulum", p: "kurikulum123" },
-    { role: "Guru", u: "guru", p: "guru123" },
-    { role: "Siswa", u: "siswa", p: "siswa123" },
+    { role: "Admin", u: "admin", p: "admin123", r: "" },
+    { role: "Kepsek", u: "kepsek", p: "kepsek123", r: "" },
+    { role: "Kurikulum", u: "kurikulum", p: "kurikulum123", r: "" },
+    { role: "Guru", u: "guru", p: "guru123", r: "" },
+    { role: "Siswa", u: "siswa", p: "siswa123", r: "siswa" },
   ];
 
   return (
@@ -64,6 +98,24 @@ export default function LoginClient() {
             {error}
           </div>
         )}
+
+        {/* Tab pilih peran login: Siswa punya field kelas & jurusan. */}
+        <div className="mb-5 flex gap-2 rounded-lg bg-slate-100 p-1">
+          <button
+            type="button"
+            onClick={() => { setRole(""); setError(""); }}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${!isSiswa ? "bg-white text-brand-dark shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Lainnya
+          </button>
+          <button
+            type="button"
+            onClick={() => { setRole("siswa"); setError(""); }}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${isSiswa ? "bg-white text-brand-dark shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+          >
+            Siswa
+          </button>
+        </div>
 
         <div className="mb-4">
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
@@ -104,6 +156,45 @@ export default function LoginClient() {
           </div>
         </div>
 
+        {isSiswa && (
+          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Kelas (Tingkat)
+              </label>
+              <select
+                value={tingkat}
+                onChange={(e) => setTingkat(e.target.value)}
+                required
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              >
+                <option value="">-- Pilih Tingkat --</option>
+                {tingkatOpsi.map((t) => (
+                  <option key={t} value={t}>Kelas {t}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Jurusan
+              </label>
+              <select
+                value={jurusanId}
+                onChange={(e) => setJurusanId(e.target.value)}
+                required
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              >
+                <option value="">-- Pilih Jurusan --</option>
+                {jurusanOpsi.map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {j.kode} - {j.nama}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading}
@@ -125,6 +216,11 @@ export default function LoginClient() {
               onClick={() => {
                 setUsername(d.u);
                 setPassword(d.p);
+                setRole(d.r);
+                if (d.r !== "siswa") {
+                  setTingkat("");
+                  setJurusanId("");
+                }
                 setError("");
               }}
               className="rounded-full border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-light hover:bg-brand-50 hover:text-brand-dark"
