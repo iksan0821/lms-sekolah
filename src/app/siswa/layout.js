@@ -2,14 +2,14 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import SiswaSidebar from "@/components/SiswaSidebar";
 
-export const metadata = { title: "Panel Siswa - LMS Sekolah" };
+export const metadata = { title: "Panel Siswa - SMK Citra Negara" };
 
 export default async function SiswaLayout({ children }) {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) redirect("/");
   if (session.role !== "siswa") {
     const home = { admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru" };
-    redirect(home[session.role] || "/login");
+    redirect(home[session.role] || "/");
   }
   return (
     <div className="flex min-h-screen bg-slate-50">

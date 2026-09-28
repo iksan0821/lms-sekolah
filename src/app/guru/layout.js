@@ -2,14 +2,14 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import GuruSidebar from "@/components/GuruSidebar";
 
-export const metadata = { title: "Panel Guru - LMS Sekolah" };
+export const metadata = { title: "Panel Guru - SMK Citra Negara" };
 
 export default async function GuruLayout({ children }) {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) redirect("/");
   if (session.role !== "guru") {
     const home = { admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", siswa: "/siswa" };
-    redirect(home[session.role] || "/login");
+    redirect(home[session.role] || "/");
   }
   return (
     <div className="flex min-h-screen bg-slate-50">

@@ -1,6 +1,6 @@
 import MonitorLayout from "@/components/MonitorLayout";
 
-export const metadata = { title: "Dashboard Kepala Sekolah - LMS Sekolah" };
+export const metadata = { title: "Dashboard Kepala Sekolah - SMK Citra Negara" };
 
 export default function Layout({ children }) {
   return (

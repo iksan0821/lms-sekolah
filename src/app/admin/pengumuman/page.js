@@ -1,6 +1,6 @@
 import { query } from "@/lib/db";
 
-export const metadata = { title: "Pengumuman - LMS Sekolah" };
+export const metadata = { title: "Pengumuman - SMK Citra Negara" };
 
 export default async function PengumumanPage() {
   const rows = await query(

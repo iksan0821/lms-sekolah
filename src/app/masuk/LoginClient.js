@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+const ROLE_TABS = [
+  { value: "admin", label: "Admin", deskripsi: "Kelola data sekolah, user, kelas, dan pengaturan sistem." },
+  { value: "kepsek", label: "Kepsek", deskripsi: "Pantau jadwal, tugas materi, ujian, dan kinerja guru." },
+  { value: "kurikulum", label: "Kurikulum", deskripsi: "Atur kurikulum, jadwal pelajaran, dan penilaian siswa." },
+  { value: "guru", label: "Guru", deskripsi: "Kelola materi, tugas, soal, asesmen, dan nilai siswa." },
+  { value: "siswa", label: "Siswa", deskripsi: "Akses materi, kerjakan tugas, ujian, dan lihat nilai." },
+];
+
 export default function LoginClient() {
   const router = useRouter();
   const [username, setUsername] = useState("");
@@ -10,7 +18,7 @@ export default function LoginClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState("admin");
   const [tingkat, setTingkat] = useState("");
   const [jurusanId, setJurusanId] = useState("");
   const [opsi, setOpsi] = useState({ jurusan: [], tingkat: [] });
@@ -52,6 +60,7 @@ export default function LoginClient() {
         body: JSON.stringify({
           username,
           password,
+          role,
           ...(isSiswa ? { tingkat, jurusan_id: jurusanId } : {}),
         }),
       });
@@ -70,10 +79,10 @@ export default function LoginClient() {
   }
 
   const demo = [
-    { role: "Admin", u: "admin", p: "admin123", r: "" },
-    { role: "Kepsek", u: "kepsek", p: "kepsek123", r: "" },
-    { role: "Kurikulum", u: "kurikulum", p: "kurikulum123", r: "" },
-    { role: "Guru", u: "guru", p: "guru123", r: "" },
+    { role: "Admin", u: "admin", p: "admin123", r: "admin" },
+    { role: "Kepsek", u: "kepsek", p: "kepsek123", r: "kepsek" },
+    { role: "Kurikulum", u: "kurikulum", p: "kurikulum123", r: "kurikulum" },
+    { role: "Guru", u: "guru", p: "guru123", r: "guru" },
     { role: "Siswa", u: "siswa", p: "siswa123", r: "siswa" },
   ];
 
@@ -83,7 +92,7 @@ export default function LoginClient() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl brand-gradient text-2xl font-bold text-white shadow-lg shadow-brand-500/30">
           LMS
         </div>
-        <h1 className="text-2xl font-bold text-slate-800">LMS Sekolah</h1>
+        <h1 className="text-2xl font-bold text-slate-800">SMK Citra Negara</h1>
         <p className="mt-1 text-sm text-slate-500">
           Sistem Pembelajaran Terpadu Sekolah
         </p>
@@ -99,22 +108,35 @@ export default function LoginClient() {
           </div>
         )}
 
-        {/* Tab pilih peran login: Siswa punya field kelas & jurusan. */}
-        <div className="mb-5 flex gap-2 rounded-lg bg-slate-100 p-1">
-          <button
-            type="button"
-            onClick={() => { setRole(""); setError(""); }}
-            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${!isSiswa ? "bg-white text-brand-dark shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-          >
-            Lainnya
-          </button>
-          <button
-            type="button"
-            onClick={() => { setRole("siswa"); setError(""); }}
-            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition ${isSiswa ? "bg-white text-brand-dark shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
-          >
-            Siswa
-          </button>
+        {/* Tab pilih peran login. Siswa punya tambahan field kelas & jurusan. */}
+        <div className="mb-2">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Masuk Sebagai
+          </p>
+          <div className="grid grid-cols-3 gap-2 rounded-lg bg-slate-100 p-1">
+            {ROLE_TABS.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => {
+                  setRole(t.value);
+                  setError("");
+                  if (t.value !== "siswa") {
+                    setTingkat("");
+                    setJurusanId("");
+                  }
+                }}
+                className={`rounded-md px-2 py-2 text-xs font-semibold transition sm:text-sm ${
+                  role === t.value
+                    ? "bg-white text-brand-dark shadow-sm"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-slate-400">{ROLE_TABS.find((t) => t.value === role)?.deskripsi}</p>
         </div>
 
         <div className="mb-4">
@@ -223,7 +245,11 @@ export default function LoginClient() {
                 }
                 setError("");
               }}
-              className="rounded-full border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-light hover:bg-brand-50 hover:text-brand-dark"
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
+                role === d.r
+                  ? "border-brand-500 bg-brand-50 text-brand-dark"
+                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-brand-light hover:bg-brand-50 hover:text-brand-dark"
+              }`}
             >
               {d.role}: {d.u}
             </button>
@@ -232,7 +258,7 @@ export default function LoginClient() {
       </div>
 
       <p className="mt-6 text-center text-xs text-slate-400">
-        (c) {new Date().getFullYear()} LMS Sekolah - Next.js + MySQL (Laragon)
+        (c) {new Date().getFullYear()} SMK Citra Negara - Next.js + MySQL (Laragon)
       </p>
     </div>
   );

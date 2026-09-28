@@ -3,9 +3,17 @@ import bcrypt from "bcryptjs";
 import { query } from "@/lib/db";
 import { signSession, COOKIE_NAME, ROLE_HOME } from "@/lib/auth";
 
+const ROLES = {
+  admin: "Administrator",
+  kepsek: "Kepala Sekolah",
+  kurikulum: "Kurikulum",
+  guru: "Guru",
+  siswa: "Siswa",
+};
+
 export async function POST(request) {
   try {
-    const { username, password, tingkat, jurusan_id } = await request.json();
+    const { username, password, tingkat, jurusan_id, role: rolePilih } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json(
@@ -36,6 +44,17 @@ export async function POST(request) {
     if (user.status !== "aktif") {
       return NextResponse.json(
         { success: false, message: "Akun Anda tidak aktif. Hubungi admin." },
+        { status: 403 }
+      );
+    }
+
+    // Role yang dipilih di form harus sesuai dengan role akun yang login.
+    if (rolePilih && rolePilih !== user.role) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: `Akun ini terdaftar sebagai ${user.role_nama}, bukan ${ROLES[rolePilih] || rolePilih}. Silakan pilih tab yang sesuai.`,
+        },
         { status: 403 }
       );
     }

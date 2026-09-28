@@ -1,4 +1,4 @@
-export const metadata = { title: "Pengaturan - LMS Sekolah" };
+export const metadata = { title: "Pengaturan - SMK Citra Negara" };
 
 export default function PengaturanPage() {
   return (
@@ -10,7 +10,7 @@ export default function PengaturanPage() {
       <div className="rounded-2xl border-slate-200 bg-white p-6 shadow-sm">
         <dl className="divide-y divide-slate-100 text-sm">
           {[
-            ["Aplikasi", "LMS Sekolah"],
+            ["Aplikasi", "SMK Citra Negara"],
             ["Framework", "Next.js (App Router)"],
             ["Database", "MySQL / MariaDB (Laragon)"],
             ["Autentikasi", "JWT Session Cookie"],

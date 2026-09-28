@@ -6,10 +6,10 @@ import MonitorSidebar from "@/components/MonitorSidebar";
 // Mengunci akses: hanya pemilik role yang boleh masuk ke areanya.
 export default async function MonitorLayout({ children, role, base, title }) {
   const session = await getSession();
-  if (!session) redirect("/login");
+  if (!session) redirect("/");
   if (session.role !== role) {
     const home = { admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru", siswa: "/siswa" };
-    redirect(home[session.role] || "/login");
+    redirect(home[session.role] || "/");
   }
 
   return (

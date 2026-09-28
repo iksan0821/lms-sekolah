@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "LMS Sekolah",
+  title: "SMK Citra Negara",
   description: "Learning Management System Sekolah",
 };
 

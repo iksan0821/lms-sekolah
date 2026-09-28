@@ -1,5 +1,5 @@
 import SiswaClient from "./SiswaClient";
-export const metadata = { title: "Data Siswa - LMS Sekolah" };
+export const metadata = { title: "Data Siswa - SMK Citra Negara" };
 export default function SiswaPage() {
   return <SiswaClient />;
 }

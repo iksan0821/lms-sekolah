@@ -96,7 +96,7 @@ export default function AdminSidebar({ user }) {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }
 
@@ -166,7 +166,7 @@ export default function AdminSidebar({ user }) {
             LMS
           </div>
           <div>
-            <p className="text-sm font-bold text-white">LMS Sekolah</p>
+            <p className="text-sm font-bold text-white">SMK Citra Negara</p>
             <p className="text-xs text-brand-100">Panel Administrator</p>
           </div>
         </div>

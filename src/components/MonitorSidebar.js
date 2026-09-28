@@ -12,6 +12,7 @@ function buildMenu(base, role) {
     { href: `${base}/tugas-materi`, label: "Tugas & Materi", icon: "book" },
     { href: `${base}/ujian`, label: "Pantau Ujian Online", icon: "exam" },
     { href: `${base}/jadwal`, label: "Pantau Jadwal Pelajaran", icon: "calendar" },
+    { href: `${base}/masalah-siswa`, label: "Permasalahan Siswa", icon: "alert" },
   ];
   if (role === "kurikulum") {
     menu.push({ href: `${base}/nilai`, label: "Download Nilai", icon: "download" });
@@ -37,6 +38,8 @@ function Icon({ name }) {
       return (<svg {...c}><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>);
     case "download":
       return (<svg {...c}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M7 10l5 5 5-5M12 15V3" /></svg>);
+    case "alert":
+      return (<svg {...c}><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><path d="M12 9v4M12 17h.01" /></svg>);
     default:
       return null;
   }
@@ -50,7 +53,7 @@ export default function MonitorSidebar({ user, base }) {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    router.push("/");
     router.refresh();
   }
 
@@ -98,7 +101,7 @@ export default function MonitorSidebar({ user, base }) {
         <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-slate-900">LMS</div>
           <div>
-            <p className="text-sm font-bold text-white">LMS Sekolah</p>
+            <p className="text-sm font-bold text-white">SMK Citra Negara</p>
             <p className="text-xs text-white/70">{user?.role_nama}</p>
           </div>
         </div>

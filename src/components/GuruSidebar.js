@@ -97,7 +97,7 @@ export default function GuruSidebar({ user }) {
         <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-slate-900">LMS</div>
           <div>
-            <p className="text-sm font-bold text-white">LMS Sekolah</p>
+            <p className="text-sm font-bold text-white">SMK Citra Negara</p>
             <p className="text-xs text-white/70">Panel Guru</p>
           </div>
         </div>
