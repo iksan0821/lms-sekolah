@@ -105,6 +105,30 @@ export async function GET(request) {
     return NextResponse.json({ success: true, data: rows, rekap });
   }
 
+  // --- ABSENSI (grafik harian + rekap per tanggal) ---
+  if (bagian === "absensi-grafik") {
+    const kelasId = searchParams.get("kelas_id");
+    const dari = searchParams.get("dari");
+    const sampai = searchParams.get("sampai");
+
+    let sql = `SELECT a.tanggal,
+                      SUM(a.status = 'hadir')  AS hadir,
+                      SUM(a.status = 'izin')   AS izin,
+                      SUM(a.status = 'sakit')  AS sakit,
+                      SUM(a.status = 'alpa')   AS alpa,
+                      COUNT(*)                 AS total
+               FROM absensi a
+               WHERE a.guru_id = ?`;
+    const params = [guruId];
+    if (kelasId) { sql += " AND a.kelas_id = ?"; params.push(kelasId); }
+    if (dari) { sql += " AND a.tanggal >= ?"; params.push(dari); }
+    if (sampai) { sql += " AND a.tanggal <= ?"; params.push(sampai); }
+    sql += " GROUP BY a.tanggal ORDER BY a.tanggal";
+
+    const rows = await query(sql, params);
+    return NextResponse.json({ success: true, data: rows });
+  }
+
   // --- BAHAN ASESMEN (tugas + ujian digabung) ---
   if (bagian === "asesmen") {
     const tugas = await query(
@@ -146,12 +170,28 @@ export async function GET(request) {
   if (bagian === "tugas") {
     const rows = await query(
       `SELECT t.id, t.judul, t.deskripsi, t.tipe, t.deadline, t.jumlah_terkumpul, t.jumlah_siswa,
-              t.mapel_id, t.kelas_id, mp.nama AS mapel, k.nama AS kelas
+              t.jumlah_soal, t.mapel_id, t.kelas_id,
+              mp.nama AS mapel, k.nama AS kelas
        FROM tugas t
        LEFT JOIN mata_pelajaran mp ON mp.id = t.mapel_id
        LEFT JOIN kelas k ON k.id = t.kelas_id
        WHERE t.guru_id = ? ORDER BY t.created_at DESC`,
       [guruId]
+    );
+    return NextResponse.json({ success: true, data: rows });
+  }
+
+  // --- SOAL milik satu tugas ---
+  if (bagian === "soal-tugas") {
+    const tugasId = searchParams.get("tugas_id");
+    if (!tugasId) return NextResponse.json({ success: true, data: [] });
+    const cek = await query("SELECT id FROM tugas WHERE id=? AND guru_id=?", [tugasId, guruId]);
+    if (!cek.length) {
+      return NextResponse.json({ success: false, message: "Tugas tidak ditemukan." }, { status: 404 });
+    }
+    const rows = await query(
+      "SELECT id, pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d, jawaban_benar FROM soal WHERE tugas_id=? ORDER BY id",
+      [tugasId]
     );
     return NextResponse.json({ success: true, data: rows });
   }

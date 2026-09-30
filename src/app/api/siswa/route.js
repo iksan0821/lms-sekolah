@@ -79,10 +79,24 @@ export async function GET(request) {
     return NextResponse.json({ success: true, data: { ujian: cek[0], soal, jawaban, hasil: hasil.length ? hasil[0] : null } });
   }
 
+  if (bagian === "tugas-detail") {
+    const tugasId = searchParams.get("tugas_id");
+    if (!tugasId) return NextResponse.json({ success: false, message: "Tugas tidak ada." }, { status: 400 });
+    const cek = await query("SELECT id FROM tugas WHERE id=? AND kelas_id=?", [tugasId, kelasId]);
+    if (!cek.length) return NextResponse.json({ success: false, message: "Tugas tidak tersedia." }, { status: 404 });
+    // Kunci jawaban tidak ikut dikirim ke siswa.
+    const soal = await query(
+      "SELECT id, pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d FROM soal WHERE tugas_id=? ORDER BY id",
+      [tugasId]
+    );
+    const jawaban = await query("SELECT soal_id, jawaban, benar FROM jawaban_siswa WHERE tugas_id=? AND siswa_id=?", [tugasId, siswaId]);
+    return NextResponse.json({ success: true, data: { soal, jawaban } });
+  }
+
   if (bagian === "tugas") {
     if (!kelasId) return NextResponse.json({ success: true, data: [] });
     const rows = await query(
-      "SELECT t.id, t.judul, t.deskripsi, t.tipe, t.deadline, mp.nama AS mapel, u.nama AS guru, pt.id AS pengumpulan_id, pt.status AS status_kumpul, pt.nilai, pt.tipe_pengumpulan, pt.file_url, pt.jawaban_teks, pt.catatan_guru FROM tugas t LEFT JOIN mata_pelajaran mp ON mp.id = t.mapel_id LEFT JOIN users u ON u.id = t.guru_id LEFT JOIN pengumpulan_tugas pt ON pt.tugas_id = t.id AND pt.siswa_id = ? WHERE t.kelas_id = ? ORDER BY t.deadline DESC",
+      "SELECT t.id, t.judul, t.deskripsi, t.tipe, t.deadline, t.jumlah_soal, mp.nama AS mapel, u.nama AS guru, pt.id AS pengumpulan_id, pt.status AS status_kumpul, pt.nilai, pt.tipe_pengumpulan, pt.file_url, pt.jawaban_teks, pt.catatan_guru FROM tugas t LEFT JOIN mata_pelajaran mp ON mp.id = t.mapel_id LEFT JOIN users u ON u.id = t.guru_id LEFT JOIN pengumpulan_tugas pt ON pt.tugas_id = t.id AND pt.siswa_id = ? WHERE t.kelas_id = ? ORDER BY t.deadline DESC",
       [siswaId, kelasId]
     );
     return NextResponse.json({ success: true, data: rows });

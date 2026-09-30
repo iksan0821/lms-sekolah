@@ -5,6 +5,98 @@ import { PageTitle, Loading, Notice, Modal, Field, inputCls } from "@/components
 
 const empty = { tugas_id: null, judul: "", tipe_pengumpulan: "link", file_url: "", jawaban_teks: "" };
 
+const OPSI = ["A", "B", "C", "D"];
+
+function SoalTugas({ tugas, onTutup, onSelesai }) {
+  const [soal, setSoal] = useState([]);
+  const [pilih, setPilih] = useState({}); // { soal_id: 'A' }
+  const [loading, setLoading] = useState(true);
+  const [mengirim, setMengirim] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    let batal = false;
+    (async () => {
+      const r = await fetch(`/api/siswa?bagian=tugas-detail&tugas_id=${tugas.id}`);
+      const d = await r.json();
+      if (batal) return;
+      if (!d.success) setMsg({ type: "error", text: d.message });
+      else {
+        setSoal(d.data.soal || []);
+        const awal = {};
+        (d.data.jawaban || []).forEach((j) => { if (j.jawaban) awal[j.soal_id] = j.jawaban; });
+        setPilih(awal);
+      }
+      setLoading(false);
+    })();
+    return () => { batal = true; };
+  }, [tugas.id]);
+
+  async function kirim() {
+    const belum = soal.filter((s) => !pilih[s.id]).length;
+    if (belum > 0 && !confirm(`${belum} soal belum dijawab. Tetap kirim?`)) return;
+    setMengirim(true);
+    setMsg(null);
+    const res = await fetch("/api/siswa/tugas", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tugas_id: tugas.id, jawaban: pilih }),
+    });
+    const d = await res.json();
+    setMengirim(false);
+    if (!d.success) { setMsg({ type: "error", text: d.message }); return; }
+    onSelesai(d.message);
+  }
+
+  return (
+    <Modal title={"Kerjakan: " + tugas.judul} onClose={onTutup} wide>
+      <Notice msg={msg} />
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <p className="mb-3 text-sm text-slate-500">
+            Ada <b className="text-brand-dark">{soal.length} soal</b> pilihan ganda. Jawab semuanya, lalu kirim.
+          </p>
+          <div className="max-h-[55vh] space-y-4 overflow-y-auto pr-1">
+            {soal.map((s, i) => (
+              <div key={s.id} className="rounded-xl border-slate-100 bg-slate-50/50 p-4">
+                <p className="text-sm font-medium text-slate-800">{i + 1}. {s.pertanyaan}</p>
+                <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                  {OPSI.map((k) => (
+                    <label
+                      key={k}
+                      className={"flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm transition " +
+                        (pilih[s.id] === k ? "border-brand bg-brand-50 text-brand-dark" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50")}
+                    >
+                      <input
+                        type="radio"
+                        name={"soal-" + s.id}
+                        value={k}
+                        checked={pilih[s.id] === k}
+                        onChange={() => setPilih({ ...pilih, [s.id]: k })}
+                        className="accent-emerald-700"
+                      />
+                      <span className="font-semibold">{k}.</span>
+                      <span className="truncate">{s["pilihan_" + k.toLowerCase()]}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-6 flex items-center justify-end gap-2">
+            <button type="button" onClick={onTutup} className="rounded-lg border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50">Tutup</button>
+            <button type="button" onClick={kirim} disabled={mengirim || soal.length === 0} className="rounded-lg bg-brand px-5 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60">
+              {mengirim ? "Mengirim..." : "Kumpulkan Jawaban"}
+            </button>
+          </div>
+        </>
+      )}
+    </Modal>
+  );
+}
+
 export default function TugasSiswa() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +105,7 @@ export default function TugasSiswa() {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
   const fileRef = useRef(null);
+  const [soalAktif, setSoalAktif] = useState(null);
 
   async function load() {
     setLoading(true);
@@ -108,7 +201,12 @@ export default function TugasSiswa() {
                   </div>
                 )}
 
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex justify-end gap-2">
+                  {t.jumlah_soal > 0 && (
+                    <button onClick={() => setSoalAktif(t)} className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600">
+                      Kerjakan {t.jumlah_soal} Soal
+                    </button>
+                  )}
                   <button onClick={() => buka(t)} className={"rounded-lg px-4 py-2 text-sm font-semibold transition " + (dikumpul ? "bg-white text-brand-dark ring-1 ring-slate-200 hover:bg-slate-50" : "bg-brand text-white hover:bg-brand-600")}>
                     {dikumpul ? "Ubah Pengumpulan" : "Kumpulkan Tugas"}
                   </button>
@@ -159,6 +257,13 @@ export default function TugasSiswa() {
             </div>
           </form>
         </Modal>
+      )}
+      {soalAktif && (
+        <SoalTugas
+          tugas={soalAktif}
+          onTutup={() => setSoalAktif(null)}
+          onSelesai={(text) => { setSoalAktif(null); setMsg({ type: "success", text }); load(); }}
+        />
       )}
     </div>
   );

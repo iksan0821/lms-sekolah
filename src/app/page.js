@@ -38,19 +38,19 @@ const MOTIVASI = [
 
 const FITUR = [
   {
-    icone: "Materi & Tugas",
+    judul: "Materi & Tugas",
     teks: "Akses materi pelajaran, unggah tugas, dan kumpulkan jawaban tepat waktu.",
   },
   {
-    icone: "Asesmen & Ujian",
+    judul: "Asesmen & Ujian",
     teks: "Kerjakan latihan dan ujian secara online dengan penilaian otomatis.",
   },
   {
-    icone: "Nilai & Absensi",
+    judul: "Nilai & Absensi",
     teks: "Pantau perkembangan nilai dan kehadiran tanpa harus datang ke kantor.",
   },
   {
-    icone: "Pengumuman",
+    judul: "Pengumuman",
     teks: "Informasi resmi dari sekolah langsung sampai ke akun Anda.",
   },
 ];
@@ -136,32 +136,40 @@ export default async function Home() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden bg-brand-50">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl" />
-        <div className="absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-brand-100/60 blur-3xl" />
+      <section className="relative isolate overflow-hidden bg-slate-900">
+        {/* Background foto sekolah */}
+        <img
+          src="/img/sekolah.jpg"
+          alt="Gedung dan lapangan SMK Citra Negara"
+          width={1024}
+          height={768}
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+        />
+        {/* Overlay supaya teks tetap terbaca */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-900/85 via-brand-800/80 to-slate-900/90" />
 
-        <div className="relative mx-auto max-w-6xl px-4 py-20 text-center sm:py-28">
-          <span className="inline-block rounded-full bg-brand-100 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-brand-700">
+        <div className="relative mx-auto max-w-6xl px-4 py-24 text-center sm:py-32">
+          <span className="inline-block rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white ring-1 ring-white/30">
             Tahun Ajaran Berjalan
           </span>
 
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
+          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight text-white sm:text-5xl">
             Belajar Lebih Cerdas,{" "}
-            <span className="text-brand-600">Tumbuh Setiap Hari</span>
+            <span className="text-brand-200">Tumbuh Setiap Hari</span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-brand-50/90 sm:text-lg">
             Selamat datang di Learning Management System SMK Citra Negara. Semua
             materi, tugas, ujian, dan informasi sekolah tersedia dalam satu tempat
             yang mudah diakses kapan saja dan di mana saja.
           </p>
 
-          <blockquote className="mx-auto mt-8 max-w-2xl border-l-4 border-brand-500 bg-white px-6 py-5 text-left shadow-sm">
-            <p className="text-base italic leading-relaxed text-slate-700">
+          <blockquote className="mx-auto mt-8 max-w-2xl border-l-4 border-brand-400 bg-white/10 px-6 py-5 text-left shadow-lg backdrop-blur-sm">
+            <p className="text-base italic leading-relaxed text-white">
               &ldquo;Masa depanmu ditentukan oleh apa yang kamu lakukan hari ini,
               bukan besok.&rdquo;
             </p>
-            <footer className="mt-2 text-xs font-semibold uppercase tracking-wide text-brand-600">
+            <footer className="mt-2 text-xs font-semibold uppercase tracking-wide text-brand-200">
               SMK Citra Negara
             </footer>
           </blockquote>
@@ -169,13 +177,13 @@ export default async function Home() {
           <div className="mt-10 flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/masuk"
-              className="brand-gradient w-full rounded-xl px-8 py-3 text-center text-base font-semibold text-white transition sm:w-auto"
+              className="brand-gradient w-full rounded-xl px-8 py-3 text-center text-base font-semibold text-white shadow-lg shadow-black/20 transition hover:brightness-110 sm:w-auto"
             >
               Masuk ke Portal
             </Link>
             <a
               href="#fitur"
-              className="w-full rounded-xl border-slate-300 bg-white px-8 py-3 text-center text-base font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+              className="w-full rounded-xl border border-white/40 bg-white/10 px-8 py-3 text-center text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/20 sm:w-auto"
             >
               Lihat Fitur
             </a>
@@ -185,12 +193,12 @@ export default async function Home() {
             {statistik.map(([angka, label]) => (
               <div
                 key={label}
-                className="rounded-2xl border-brand-100 bg-white px-4 py-6 shadow-sm"
+                className="rounded-2xl border border-white/25 bg-white/10 px-4 py-6 shadow-lg backdrop-blur-md"
               >
-                <p className="text-2xl font-bold text-brand-600 sm:text-3xl">
+                <p className="text-2xl font-bold text-white sm:text-3xl">
                   {angka}
                 </p>
-                <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+                <p className="mt-1 text-xs font-medium text-brand-100/80 sm:text-sm">
                   {label}
                 </p>
               </div>

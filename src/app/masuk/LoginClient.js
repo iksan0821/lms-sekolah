@@ -87,20 +87,20 @@ export default function LoginClient() {
   ];
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl brand-gradient text-2xl font-bold text-white shadow-lg shadow-brand-500/30">
-          LMS
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl brand-gradient text-xl font-bold text-white shadow-lg shadow-black/30">
+          SCN
         </div>
-        <h1 className="text-2xl font-bold text-slate-800">SMK Citra Negara</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-2xl font-bold text-white">SMK Citra Negara</h1>
+        <p className="mt-1 text-sm text-brand-100/80">
           Sistem Pembelajaran Terpadu Sekolah
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-2xl border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/50"
+        className="rounded-2xl bg-white p-6 shadow-xl"
       >
         {error && (
           <div className="mb-4 rounded-lg border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -226,8 +226,8 @@ export default function LoginClient() {
         </button>
       </form>
 
-      <div className="mt-6 rounded-2xl border-slate-200 bg-white/70 p-4 backdrop-blur">
-        <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+        <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-brand-100/80">
           Akun Demo (klik untuk isi otomatis)
         </p>
         <div className="flex flex-wrap justify-center gap-2">
@@ -247,8 +247,8 @@ export default function LoginClient() {
               }}
               className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
                 role === d.r
-                  ? "border-brand-500 bg-brand-50 text-brand-dark"
-                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-brand-light hover:bg-brand-50 hover:text-brand-dark"
+                  ? "border-white bg-white text-brand-dark"
+                  : "border-white/30 bg-white/10 text-white/80 hover:border-white/60 hover:bg-white/20 hover:text-white"
               }`}
             >
               {d.role}: {d.u}
@@ -257,8 +257,8 @@ export default function LoginClient() {
         </div>
       </div>
 
-      <p className="mt-6 text-center text-xs text-slate-400">
-        (c) {new Date().getFullYear()} SMK Citra Negara - Next.js + MySQL (Laragon)
+      <p className="mt-6 text-center text-xs text-white/60">
+        &copy; {new Date().getFullYear()} SMK Citra Negara - Next.js + MySQL (Laragon)
       </p>
     </div>
   );

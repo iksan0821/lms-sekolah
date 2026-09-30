@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PageTitle, Table, EmptyRow, Loading } from "@/components/guru-ui";
+import { unduhCSV, unduhExcel, cetakPDF } from "@/lib/exportNilai";
 
 export default function DownloadNilai() {
   const [opsi, setOpsi] = useState({ kelas: [], mapel: [] });
@@ -37,29 +38,43 @@ export default function DownloadNilai() {
     if (d.data.length === 0) setPesan({ tipe: "info", text: "Belum ada nilai untuk pilihan ini." });
   }
 
-  function downloadCSV() {
-    if (rows.length === 0) {
-      setPesan({ tipe: "error", text: "Tidak ada data untuk diunduh." });
-      return;
-    }
+  function namaLengkap() {
     const mapelNama = opsi.mapel.find((m) => String(m.id) === String(mapelId))?.nama || "mapel";
     const kelasNama = opsi.kelas.find((k) => String(k.id) === String(kelasId))?.nama || "";
-    const header = ["No", "Nama Siswa", "NIS", "Kelas", "Tugas", "Harian", "Ujian", "Rata-rata"];
-    const baris = rows.map((r, i) =>
-      [i + 1, r.siswa, r.nis || "-", r.kelas || "-", r.tugas ?? "-", r.harian ?? "-", r.ujian ?? "-", r.rata ?? "-"]
-        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-        .join(",")
+    return { mapelNama, kelasNama };
+  }
+
+  function pastikanAda() {
+    if (rows.length === 0) {
+      setPesan({ tipe: "error", text: "Tidak ada data untuk diunduh." });
+      return false;
+    }
+    return true;
+  }
+
+  function downloadCSV() {
+    if (!pastikanAda()) return;
+    const { mapelNama, kelasNama } = namaLengkap();
+    unduhCSV(rows, mapelNama, kelasNama);
+    setPesan({ tipe: "info", text: `Nilai ${mapelNama} berhasil diunduh (CSV).` });
+  }
+
+  function downloadExcel() {
+    if (!pastikanAda()) return;
+    const { mapelNama, kelasNama } = namaLengkap();
+    unduhExcel(rows, mapelNama, kelasNama);
+    setPesan({ tipe: "info", text: `Nilai ${mapelNama} berhasil diunduh (Excel).` });
+  }
+
+  function downloadPDF() {
+    if (!pastikanAda()) return;
+    const { mapelNama, kelasNama } = namaLengkap();
+    const ok = cetakPDF(rows, mapelNama, kelasNama);
+    setPesan(
+      ok
+        ? { tipe: "info", text: `Dialog cetak terbuka. Pilih "Save as PDF" untuk menyimpan nilai ${mapelNama}.` }
+        : { tipe: "error", text: "Popup diblokir browser. Izinkan popup untuk jendela ini lalu coba lagi." }
     );
-    const csv = [header.join(","), ...baris].join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const bagianNama = kelasNama ? `${mapelNama}_${kelasNama}` : mapelNama;
-    a.download = `nilai_${bagianNama.replace(/\s+/g, "_")}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setPesan({ tipe: "info", text: `Nilai ${bagianNama} berhasil diunduh (CSV).` });
   }
 
   return (
@@ -109,6 +124,20 @@ export default function DownloadNilai() {
             className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-dark ring-1 ring-slate-200 transition hover:bg-brand-50"
           >
             Download CSV
+          </button>
+          <button
+            type="button"
+            onClick={downloadExcel}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-dark ring-1 ring-slate-200 transition hover:bg-brand-50"
+          >
+            Download Excel
+          </button>
+          <button
+            type="button"
+            onClick={downloadPDF}
+            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-dark ring-1 ring-slate-200 transition hover:bg-brand-50"
+          >
+            Download PDF
           </button>
         </form>
 

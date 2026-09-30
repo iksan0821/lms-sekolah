@@ -36,11 +36,10 @@ export default function SiswaKelas() {
                 <button
                   key={k.id}
                   onClick={() => pilihKelas(String(k.id))}
-                  className={`rounded-xl border px-5 py-3 text-sm font-semibold transition ${
-                    String(kelasId) === String(k.id)
+                  className={`rounded-xl border px-5 py-3 text-sm font-semibold transition ${String(kelasId) === String(k.id)
                       ? "border-brand bg-brand text-white shadow-sm"
                       : "border-slate-200 bg-white text-slate-700 hover:border-brand hover:bg-brand-50"
-                  }`}
+                    }`}
                 >
                   {k.nama}
                   <span className="ml-2 text-xs opacity-70">Tingkat {k.tingkat}</span>

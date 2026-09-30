@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useGuru, PageTitle, Card, Loading, Table, EmptyRow, Notice, STATUS_ABSEN } from "@/components/guru-ui";
+import GrafikAbsensi from "@/components/guru/GrafikAbsensi";
+
+function iso(d) {
+  return d.toISOString().slice(0, 10);
+}
 
 export default function AbsensiGuru() {
   const { data: opsi, loading, error } = useGuru("siswa");
@@ -14,6 +19,14 @@ export default function AbsensiGuru() {
   const [saving, setSaving] = useState(false);
   const [riwayat, setRiwayat] = useState([]);
   const [rekap, setRekap] = useState({ hadir: 0, izin: 0, sakit: 0, alpa: 0 });
+  const [grafik, setGrafik] = useState([]);
+  const [terpilih, setTerpilih] = useState("");
+  const [rentang, setRentang] = useState(() => {
+    const akhir = new Date();
+    const awal = new Date();
+    awal.setDate(akhir.getDate() - 13);
+    return { dari: iso(awal), sampai: iso(akhir) };
+  });
 
   async function muatSiswa(kId) {
     setKelasId(kId);
@@ -39,6 +52,22 @@ export default function AbsensiGuru() {
   }
 
   useEffect(() => { if (kelasId) muatRiwayat(); }, [kelasId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    let batal = false;
+    (async () => {
+      const q = new URLSearchParams({
+        bagian: "absensi-grafik",
+        dari: rentang.dari,
+        sampai: rentang.sampai,
+      });
+      if (kelasId) q.set("kelas_id", kelasId);
+      const r = await fetch(`/api/guru?${q.toString()}`);
+      const d = await r.json();
+      if (!batal && d.success) setGrafik(d.data || []);
+    })();
+    return () => { batal = true; };
+  }, [kelasId, rentang.dari, rentang.sampai]);
 
   async function simpan() {
     if (!kelasId) { setMsg({ type: "error", text: "Pilih kelas dulu." }); return; }
@@ -151,6 +180,46 @@ export default function AbsensiGuru() {
               </Card>
             ))}
           </div>
+
+          <Card className="mb-6">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-base font-semibold text-slate-800">Grafik Kehadiran</h2>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={rentang.dari}
+                  max={rentang.sampai}
+                  onChange={(e) => { setRentang({ ...rentang, dari: e.target.value }); setTerpilih(""); }}
+                  className="rounded-lg border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-brand"
+                />
+                <span className="text-xs text-slate-400">s.d.</span>
+                <input
+                  type="date"
+                  value={rentang.sampai}
+                  min={rentang.dari}
+                  onChange={(e) => { setRentang({ ...rentang, sampai: e.target.value }); setTerpilih(""); }}
+                  className="rounded-lg border-slate-300 px-3 py-1.5 text-sm outline-none focus:border-brand"
+                />
+              </div>
+            </div>
+            <GrafikAbsensi
+              data={grafik}
+              terpilih={terpilih}
+              onPilih={(tgl) => setTerpilih(tgl === terpilih ? "" : tgl)}
+            />
+            {terpilih && (
+              <p className="mt-2 text-xs text-slate-500">
+                Detail tanggal <span className="font-semibold text-brand-dark">{terpilih}</span>:{" "}
+                {(() => {
+                  const row = grafik.find((g) => String(g.tanggal) === terpilih);
+                  if (!row) return "tidak ada data.";
+                  return ["hadir", "izin", "sakit", "alpa"]
+                    .map((k) => `${STATUS_ABSEN[k].label} ${Number(row[k]) || 0}`)
+                    .join(" · ");
+                })()}
+              </p>
+            )}
+          </Card>
 
           <Card>
             <h2 className="mb-4 text-base font-semibold text-slate-800">Riwayat Absensi</h2>

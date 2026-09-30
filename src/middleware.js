@@ -13,7 +13,7 @@ export async function middleware(request) {
 
   if (!session) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/masuk";
     return NextResponse.redirect(url);
   }
 

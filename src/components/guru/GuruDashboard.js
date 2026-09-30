@@ -9,12 +9,12 @@ export default function GuruDashboard({ nama }) {
 
   const stats = data
     ? [
-        { label: "Kelas Diajar", value: data.jumlahKelas, icon: "🏫" },
-        { label: "Total Siswa", value: data.jumlahSiswa, icon: "👥" },
-        { label: "Materi", value: data.jumlahMateri, icon: "📚" },
-        { label: "Tugas", value: data.jumlahTugas, icon: "📝" },
-        { label: "Ujian / Latihan", value: data.jumlahUjian, icon: "🧪" },
-      ]
+      { label: "Kelas Diajar", value: data.jumlahKelas, icon: "🏫" },
+      { label: "Total Siswa", value: data.jumlahSiswa, icon: "👥" },
+      { label: "Materi", value: data.jumlahMateri, icon: "📚" },
+      { label: "Tugas", value: data.jumlahTugas, icon: "📝" },
+      { label: "Ujian / Latihan", value: data.jumlahUjian, icon: "🧪" },
+    ]
     : [];
 
   return (

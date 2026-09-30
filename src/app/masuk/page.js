@@ -12,14 +12,22 @@ export default async function MasukPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-brand-50 px-4 py-10">
-      <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-200/40 blur-3xl" />
-      <div className="absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-brand-100/60 blur-3xl" />
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-slate-900 px-4 py-10">
+      {/* Background foto sekolah */}
+      <img
+        src="/img/sekolah.jpg"
+        alt="Gedung dan lapangan SMK Citra Negara"
+        width={1024}
+        height={768}
+        className="absolute inset-0 -z-10 h-full w-full object-cover"
+      />
+      {/* Overlay gelap supaya form tetap terbaca */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-900/90 via-brand-800/85 to-slate-900/95" />
 
       <div className="relative w-full max-w-md">
         <Link
           href="/"
-          className="mb-6 flex items-center justify-center gap-2 text-sm font-medium text-brand-700 transition hover:text-brand-800"
+          className="mb-6 flex items-center justify-center gap-2 text-sm font-medium text-white/80 transition hover:text-white"
         >
           <span aria-hidden="true">&larr;</span> Kembali ke Beranda
         </Link>
