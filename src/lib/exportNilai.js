@@ -1,7 +1,9 @@
-// Utilitas unduh rekap nilai ke CSV, Excel, dan PDF.
-// Sengaja tanpa library tambahan: Excel memakai format SpreadsheetML 2003
-// (dibuka native oleh Excel/LibreOffice) dan PDF memakai dialog cetak
-// browser dengan stylesheet cetak sendiri.
+// Utilitas unduh rekap nilai ke Excel dan PDF.
+// Excel memakai format SpreadsheetML 2003 (dibuka native oleh Excel/LibreOffice)
+// dan PDF dibuat langsung sebagai berkas .pdf memakai jsPDF + jspdf-autotable.
+
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const KOLOM = [
   "No",
@@ -42,16 +44,6 @@ function unduhBlob(konten, tipe, nama) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-export function unduhCSV(rows, mapelNama, kelasNama) {
-  const escape = (v) => `"${String(v).replace(/"/g, '""')}"`;
-  const baris = rows.map((_, i) => sel(rows, i).map(escape).join(","));
-  unduhBlob(
-    ["\uFEFF" + [KOLOM.join(","), ...baris].join("\r\n")],
-    "text/csv;charset=utf-8;",
-    namaBerkas(mapelNama, kelasNama, "csv")
-  );
 }
 
 // SpreadsheetML 2003: satu sheet dengan baris <Row> dan sel <Cell>.
@@ -122,67 +114,46 @@ export function unduhExcel(rows, mapelNama, kelasNama) {
   );
 }
 
-// PDF: buka jendela cetak berisi tabel berformat, lalu panggil print().
-// Browser membuat PDF dari dialog tersebut (pilih "Save as PDF").
-export function cetakPDF(rows, mapelNama, kelasNama) {
-  const esc = (s) =>
-    String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+// PDF: susun dokumen A4 landscape berisi tabel nilai, lalu unduh sebagai berkas .pdf.
+export function unduhPDF(rows, mapelNama, kelasNama) {
+  const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  const lebar = doc.internal.pageSize.getWidth();
 
-  const kepala = KOLOM.map((k) => `<th>${esc(k)}</th>`).join("");
-  const isi = rows
-    .map((_, i) => {
-      const v = sel(rows, i);
-      return (
-        "<tr>" +
-        v
-          .map((nilai, j) => {
-            const cls = j === 0 || j >= 4 ? ' class="num"' : "";
-            return `<td${cls}>${esc(nilai)}</td>`;
-          })
-          .join("") +
-        "</tr>"
-      );
-    })
-    .join("\n");
+  doc.setFontSize(15);
+  doc.text("Rekap Nilai Siswa", 40, 42);
+  doc.setFontSize(10);
+  doc.setTextColor(71, 85, 105);
+  doc.text(
+    `Mata Pelajaran: ${mapelNama}${kelasNama ? `  -  Kelas: ${kelasNama}` : " (semua kelas)"}  -  Jumlah siswa: ${rows.length}`,
+    40,
+    60
+  );
 
-  const html = `<!DOCTYPE html>
-<html lang="id"><head><meta charset="utf-8">
-<title>Nilai ${esc(mapelNama)}</title>
-<style>
-  @page { size: A4 landscape; margin: 12mm; }
-  body { font-family: "Segoe UI", Arial, sans-serif; color: #0f172a; margin: 0; }
-  h1 { font-size: 16pt; margin: 0 0 2mm; }
-  .sub { font-size: 10pt; color: #475569; margin: 0 0 4mm; }
-  table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
-  th, td { border: 1px solid #cbd5e1; padding: 1.6mm 2mm; }
-  th { background: #068a57; color: #fff; font-weight: 600; }
-  tbody tr:nth-child(even) { background: #f8fafc; }
-  td.num { text-align: center; }
-  .foot { margin-top: 4mm; font-size: 9pt; color: #64748b; }
-</style></head><body>
-<h1>Rekap Nilai Siswa</h1>
-<p class="sub">Mata Pelajaran: <strong>${esc(mapelNama)}</strong>${kelasNama ? ` &middot; Kelas: <strong>${esc(kelasNama)}</strong>` : " (semua kelas)"} &middot; Jumlah siswa: ${rows.length}</p>
-<table><thead><tr>${kepala}</tr></thead>
-<tbody>
-${isi}
-</tbody></table>
-<p class="foot">Dicetak pada ${new Date().toLocaleString("id-ID")}</p>
-</body></html>`;
+  autoTable(doc, {
+    head: [KOLOM],
+    body: rows.map((_, i) => sel(rows, i)),
+    startY: 76,
+    margin: { left: 40, right: 40 },
+    styles: { fontSize: 9, cellPadding: 4, textColor: [15, 23, 42], lineColor: [203, 213, 225], lineWidth: 0.5 },
+    headStyles: { fillColor: [6, 138, 87], textColor: 255, fontStyle: "bold", halign: "center" },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { halign: "center", cellWidth: 34 },
+      1: { cellWidth: 190 },
+      2: { halign: "center", cellWidth: 80 },
+      3: { halign: "center", cellWidth: 80 },
+      4: { halign: "center", cellWidth: 60 },
+      5: { halign: "center", cellWidth: 60 },
+      6: { halign: "center", cellWidth: 60 },
+      7: { halign: "center", cellWidth: 70 },
+    },
+    didDrawPage: () => {
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Dicetak pada ${new Date().toLocaleString("id-ID")}`, 40, doc.internal.pageSize.getHeight() - 24);
+    },
+  });
 
-  const w = window.open("", "_blank", "width=1000,height=720");
-  if (!w) {
-    return false;
-  }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  w.focus();
-  // Beri waktu browser merender layout sebelum membuka dialog cetak.
-  setTimeout(() => {
-    w.print();
-  }, 400);
+  doc.save(namaBerkas(mapelNama, kelasNama, "pdf"));
   return true;
 }

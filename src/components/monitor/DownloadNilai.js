@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { PageTitle, Table, EmptyRow, Loading } from "@/components/monitor-ui";
-import { unduhCSV, unduhExcel, cetakPDF } from "@/lib/exportNilai";
+import { unduhExcel, unduhPDF } from "@/lib/exportNilai";
 
 export default function DownloadNilai() {
   const [opsi, setOpsi] = useState({ kelas: [], mapel: [] });
@@ -52,13 +52,6 @@ export default function DownloadNilai() {
     return true;
   }
 
-  function downloadCSV() {
-    if (!pastikanAda()) return;
-    const { mapelNama, kelasNama } = namaLengkap();
-    unduhCSV(rows, mapelNama, kelasNama);
-    setPesan({ tipe: "info", text: `Nilai ${mapelNama} berhasil diunduh (CSV).` });
-  }
-
   function downloadExcel() {
     if (!pastikanAda()) return;
     const { mapelNama, kelasNama } = namaLengkap();
@@ -69,12 +62,8 @@ export default function DownloadNilai() {
   function downloadPDF() {
     if (!pastikanAda()) return;
     const { mapelNama, kelasNama } = namaLengkap();
-    const ok = cetakPDF(rows, mapelNama, kelasNama);
-    setPesan(
-      ok
-        ? { tipe: "info", text: `Dialog cetak terbuka. Pilih "Save as PDF" untuk menyimpan nilai ${mapelNama}.` }
-        : { tipe: "error", text: "Popup diblokir browser. Izinkan popup untuk jendela ini lalu coba lagi." }
-    );
+    unduhPDF(rows, mapelNama, kelasNama);
+    setPesan({ tipe: "info", text: `Nilai ${mapelNama} berhasil diunduh (PDF).` });
   }
 
   return (
@@ -117,13 +106,6 @@ export default function DownloadNilai() {
             className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600"
           >
             Tampilkan Nilai
-          </button>
-          <button
-            type="button"
-            onClick={downloadCSV}
-            className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-dark ring-1 ring-slate-200 transition hover:bg-brand-50"
-          >
-            Download CSV
           </button>
           <button
             type="button"
