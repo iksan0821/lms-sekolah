@@ -27,7 +27,6 @@ export async function GET(request) {
       [guruId]
     );
     const jumlahMateri = await query("SELECT COUNT(*) AS n FROM materi WHERE guru_id = ?", [guruId]);
-    const jumlahTugas = await query("SELECT COUNT(*) AS n FROM tugas WHERE guru_id = ?", [guruId]);
     const jumlahUjian = await query("SELECT COUNT(*) AS n FROM ujian_online WHERE guru_id = ?", [guruId]);
     const jumlahSiswa = await query(
       `SELECT COUNT(*) AS n FROM siswa s
@@ -45,7 +44,6 @@ export async function GET(request) {
       data: {
         jumlahKelas: jumlahKelas[0].n,
         jumlahMateri: jumlahMateri[0].n,
-        jumlahTugas: jumlahTugas[0].n,
         jumlahUjian: jumlahUjian[0].n,
         jumlahSiswa: jumlahSiswa[0].n,
         absensi: absensiHariIni,
@@ -129,7 +127,21 @@ export async function GET(request) {
     return NextResponse.json({ success: true, data: rows });
   }
 
-  // --- BAHAN ASESMEN (tugas + ujian digabung) ---
+  // --- MATERI ---
+  if (bagian === "materi") {
+    const rows = await query(
+      `SELECT m.id, m.judul, m.deskripsi, m.tipe, m.file_url, m.created_at,
+              mp.nama AS mapel, k.nama AS kelas
+       FROM materi m
+       LEFT JOIN mata_pelajaran mp ON mp.id = m.mapel_id
+       LEFT JOIN kelas k ON k.id = m.kelas_id
+       WHERE m.guru_id = ? ORDER BY m.created_at DESC`,
+      [guruId]
+    );
+    return NextResponse.json({ success: true, data: rows });
+  }
+
+  // --- ASESMEN (tugas + ujian digabung, read-only untuk tampilan) ---
   if (bagian === "asesmen") {
     const tugas = await query(
       `SELECT t.id, t.judul, t.tipe, t.deadline, t.jumlah_terkumpul, t.jumlah_siswa,
@@ -150,50 +162,6 @@ export async function GET(request) {
       [guruId]
     );
     return NextResponse.json({ success: true, data: { tugas, ujian } });
-  }
-
-  // --- MATERI ---
-  if (bagian === "materi") {
-    const rows = await query(
-      `SELECT m.id, m.judul, m.deskripsi, m.tipe, m.file_url, m.created_at,
-              mp.nama AS mapel, k.nama AS kelas
-       FROM materi m
-       LEFT JOIN mata_pelajaran mp ON mp.id = m.mapel_id
-       LEFT JOIN kelas k ON k.id = m.kelas_id
-       WHERE m.guru_id = ? ORDER BY m.created_at DESC`,
-      [guruId]
-    );
-    return NextResponse.json({ success: true, data: rows });
-  }
-
-  // --- TUGAS (milik guru) ---
-  if (bagian === "tugas") {
-    const rows = await query(
-      `SELECT t.id, t.judul, t.deskripsi, t.tipe, t.deadline, t.jumlah_terkumpul, t.jumlah_siswa,
-              t.jumlah_soal, t.mapel_id, t.kelas_id,
-              mp.nama AS mapel, k.nama AS kelas
-       FROM tugas t
-       LEFT JOIN mata_pelajaran mp ON mp.id = t.mapel_id
-       LEFT JOIN kelas k ON k.id = t.kelas_id
-       WHERE t.guru_id = ? ORDER BY t.created_at DESC`,
-      [guruId]
-    );
-    return NextResponse.json({ success: true, data: rows });
-  }
-
-  // --- SOAL milik satu tugas ---
-  if (bagian === "soal-tugas") {
-    const tugasId = searchParams.get("tugas_id");
-    if (!tugasId) return NextResponse.json({ success: true, data: [] });
-    const cek = await query("SELECT id FROM tugas WHERE id=? AND guru_id=?", [tugasId, guruId]);
-    if (!cek.length) {
-      return NextResponse.json({ success: false, message: "Tugas tidak ditemukan." }, { status: 404 });
-    }
-    const rows = await query(
-      "SELECT id, pertanyaan, pilihan_a, pilihan_b, pilihan_c, pilihan_d, jawaban_benar FROM soal WHERE tugas_id=? ORDER BY id",
-      [tugasId]
-    );
-    return NextResponse.json({ success: true, data: rows });
   }
 
   // --- UJIAN / LATIHAN SOAL (milik guru) ---

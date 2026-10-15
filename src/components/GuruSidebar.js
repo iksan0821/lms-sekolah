@@ -10,7 +10,6 @@ const MENU = [
   { href: "/guru/absensi", label: "Absensi", icon: "calendar-check" },
   { href: "/guru/asesmen", label: "Asesmen", icon: "clipboard" },
   { href: "/guru/materi", label: "Upload Materi", icon: "upload" },
-  { href: "/guru/tugas", label: "Buat Tugas", icon: "task" },
   { href: "/guru/ujian", label: "Latihan Soal / Ujian", icon: "exam" },
   { href: "/guru/nilai", label: "Download Nilai", icon: "download" },
 ];
