@@ -10,10 +10,19 @@ const MENU = [
   { href: "/admin/siswa", label: "Data Siswa", icon: "student" },
   { href: "/admin/guru", label: "Data Guru", icon: "teacher" },
   { href: "/admin/kelas", label: "Kelas", icon: "class" },
+  { href: "/admin/jurusan", label: "Jurusan", icon: "branch" },
   { href: "/admin/mapel", label: "Mata Pelajaran", icon: "book" },
+  { href: "/admin/monitor", label: "Monitor Pembelajaran", icon: "monitor" },
   { href: "/admin/pantau", label: "Pantau Akun", icon: "eye" },
+  { href: "/admin/aktivitas", label: "Riwayat Aktivitas", icon: "history" },
+  { href: "/admin/laporan", label: "Laporan", icon: "report" },
   { href: "/admin/pengumuman", label: "Pengumuman", icon: "megaphone" },
   { href: "/admin/pengaturan", label: "Pengaturan", icon: "settings" },
+];
+
+// Menu khusus Super Admin
+const MENU_SUPER = [
+  { href: "/admin/backup", label: "Backup & Pemulihan", icon: "backup" },
 ];
 
 function Icon({ name }) {
@@ -63,6 +72,45 @@ function Icon({ name }) {
           <path d="M8 7h8M8 11h6" />
         </svg>
       );
+    case "branch":
+      return (
+        <svg {...common}>
+          <circle cx="6" cy="6" r="3" />
+          <circle cx="18" cy="18" r="3" />
+          <circle cx="6" cy="18" r="3" />
+          <path d="M6 9v6M9 6h3a3 3 0 0 1 3 3v6" />
+        </svg>
+      );
+    case "monitor":
+      return (
+        <svg {...common}>
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <path d="M8 21h8M12 17v4" />
+        </svg>
+      );
+    case "history":
+      return (
+        <svg {...common}>
+          <path d="M3 3v5h5" />
+          <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+          <path d="M12 7v5l4 2" />
+        </svg>
+      );
+    case "report":
+      return (
+        <svg {...common}>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+        </svg>
+      );
+    case "backup":
+      return (
+        <svg {...common}>
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+        </svg>
+      );
     case "megaphone":
       return (
         <svg {...common}>
@@ -100,9 +148,11 @@ export default function AdminSidebar({ user }) {
     router.refresh();
   }
 
+  const semuaMenu = user?.role === "super_admin" ? [...MENU, ...MENU_SUPER] : MENU;
+
   const nav = (
-    <nav className="flex flex-1 flex-col gap-1 px-3">
-      {MENU.map((m) => {
+    <nav className="flex flex-1 flex-col gap-1 px-3 overflow-y-auto">
+      {semuaMenu.map((m) => {
         const active =
           m.href === "/admin"
             ? pathname === "/admin"
@@ -193,6 +243,9 @@ export default function AdminSidebar({ user }) {
           >
             Keluar
           </button>
+          <p className="mt-3 text-center text-[11px] text-brand-100/70">
+            Dikembangkan oleh <span className="font-semibold text-white">Iksan</span>
+          </p>
         </div>
       </aside>
 

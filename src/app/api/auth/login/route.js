@@ -49,7 +49,9 @@ export async function POST(request) {
     }
 
     // Role yang dipilih di form harus sesuai dengan role akun yang login.
-    if (rolePilih && rolePilih !== user.role) {
+    // Super admin masuk lewat tab Admin (tidak ada tab terpisah), jadi diizinkan di sini.
+    const cocokTab = rolePilih === "admin" && user.role === "super_admin";
+    if (rolePilih && rolePilih !== user.role && !cocokTab) {
       return NextResponse.json(
         {
           success: false,

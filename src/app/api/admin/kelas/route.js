@@ -1,10 +1,10 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 
 async function requireAdmin() {
   const session = await getSession();
-  if (!session || session.role !== "admin") return null;
+  if (!session || !["admin", "super_admin"].includes(session.role)) return null;
   return session;
 }
 

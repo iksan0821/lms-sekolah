@@ -5,5 +5,5 @@ export const metadata = { title: "Manajemen User - SMK Citra Negara" };
 
 export default async function UsersPage() {
   const session = await getSession();
-  return <UsersClient currentUserId={session?.id} />;
+  return <UsersClient currentUserId={session?.id} currentUserRole={session?.role} />;
 }

@@ -34,9 +34,17 @@ export async function getSession() {
   return await verifySession(token);
 }
 
+/** Role dengan akses penuh di area admin (super admin & admin) */
+export const ADMIN_ROLES = ["admin", "super_admin"];
+
+export function isAdminRole(role) {
+  return ADMIN_ROLES.includes(role);
+}
+
 /** Mapping slug role ke dashboard masing-masing */
 export const ROLE_HOME = {
   admin: "/admin",
+  super_admin: "/admin",
   kepsek: "/kepsek",
   kurikulum: "/kurikulum",
   guru: "/guru",

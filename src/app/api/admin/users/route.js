@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth";
 
 async function requireAdmin() {
   const session = await getSession();
-  if (!session || session.role !== "admin") return null;
+  if (!session || !["admin", "super_admin"].includes(session.role)) return null;
   return session;
 }
 
@@ -52,6 +52,13 @@ export async function POST(request) {
       return NextResponse.json(
         { success: false, message: "Nama, username, password, dan role wajib diisi." },
         { status: 400 }
+      );
+    }
+
+    if (role === "super_admin" && session.role !== "super_admin") {
+      return NextResponse.json(
+        { success: false, message: "Hanya Super Admin yang dapat membuat akun Super Admin." },
+        { status: 403 }
       );
     }
 

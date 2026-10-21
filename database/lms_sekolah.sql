@@ -29,7 +29,8 @@ INSERT INTO `roles` (`id`, `nama`, `slug`, `deskripsi`) VALUES
 (2, 'Kepala Sekolah', 'kepsek', 'Melihat laporan dan statistik sekolah'),
 (3, 'Kurikulum', 'kurikulum', 'Mengelola kurikulum, jadwal, dan mata pelajaran'),
 (4, 'Guru', 'guru', 'Mengelola kelas, materi, dan penilaian'),
-(5, 'Siswa', 'siswa', 'Mengakses materi dan tugas pembelajaran');
+(5, 'Siswa', 'siswa', 'Mengakses materi dan tugas pembelajaran'),
+(6, 'Super Admin', 'super_admin', 'Super admin: mengatur semuanya, termasuk menghapus admin');
 
 -- -------------------------------------------------------------
 -- Tabel tahun ajaran
@@ -214,7 +215,8 @@ INSERT INTO `users` (`id`, `nama`, `username`, `email`, `password`, `role_id`, `
 (2, 'Drs. Budi Santoso, M.Pd', 'kepsek', 'kepsek@lmssekolah.sch.id', '$2b$10$wx18oM3o468e5vKKi8DJEuwmHerMPNvEqwDWE98d8J4iRkik.DN6a', 2, 'KS001', 'L', '081200000002', 'aktif'),
 (3, 'Siti Aminah, S.Pd', 'kurikulum', 'kurikulum@lmssekolah.sch.id', '$2b$10$7zaApK19djjKsBLyRRfJR.OZkSgbL0LWIH/SRp52AHd94tCHwcL5G', 3, 'KR001', 'P', '081200000003', 'aktif'),
 (4, 'Ahmad Fauzi, S.Pd', 'guru', 'guru@lmssekolah.sch.id', '$2b$10$WZ.86YQkCckwjYs.t2PyHuppB28TGZvKZcynpQNLfR0SByKveMVCy', 4, 'GR001', 'L', '081200000004', 'aktif'),
-(5, 'Rina Marlina', 'siswa', 'siswa@lmssekolah.sch.id', '$2b$10$r00QcfKoWLxD.KHn.wJN.uek5N60hTvWevOG5XLdXOifgrvbi/DVy', 5, NULL, 'P', '081200000005', 'aktif');
+(5, 'Rina Marlina', 'siswa', 'siswa@lmssekolah.sch.id', '$2b$10$r00QcfKoWLxD.KHn.wJN.uek5N60hTvWevOG5XLdXOifgrvbi/DVy', 5, NULL, 'P', '081200000005', 'aktif'),
+(6, 'Super Administrator', 'superadmin', 'superadmin@lmssekolah.sch.id', '$2b$10$tjfU.vo6IrOKIIvxI49Qc.F9aqBXcUw943U7XFbSGEGt7XaXcKiRm', 6, 'SA001', 'L', '081200000006', 'aktif');
 
 INSERT INTO `kelas` (`id`, `nama`, `tingkat`, `jurusan_id`, `wali_kelas_id`, `tahun_ajaran_id`) VALUES
 (1, 'X BDR', '10', 1, 4, 1),

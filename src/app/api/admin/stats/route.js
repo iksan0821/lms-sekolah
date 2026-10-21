@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 
 export async function GET() {
   const session = await getSession();
-  if (!session || session.role !== "admin") {
+  if (!session || !["admin", "super_admin"].includes(session.role)) {
     return NextResponse.json({ success: false, message: "Akses ditolak." }, { status: 403 });
   }
 

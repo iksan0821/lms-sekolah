@@ -306,7 +306,8 @@ export default async function Home() {
             Management System
           </p>
           <p className="text-xs text-slate-400">
-            Dibangun dengan Next.js + MySQL (Laragon)
+            Dibangun dengan Next.js + MySQL (Laragon) · Dikembangkan oleh{" "}
+            <span className="font-semibold text-slate-600">Iksan</span>
           </p>
         </div>
       </footer>

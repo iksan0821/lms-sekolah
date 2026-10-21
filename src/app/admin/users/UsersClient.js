@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 const ROLES = [
+  { slug: "super_admin", nama: "Super Admin" },
   { slug: "admin", nama: "Administrator" },
   { slug: "kepsek", nama: "Kepala Sekolah" },
   { slug: "kurikulum", nama: "Kurikulum" },
@@ -11,6 +12,7 @@ const ROLES = [
 ];
 
 const BADGE = {
+  super_admin: "bg-red-100 text-red-700",
   admin: "bg-brand-100 text-brand-dark",
   kepsek: "bg-amber-100 text-amber-700",
   kurikulum: "bg-amber-100 text-amber-700",
@@ -32,7 +34,7 @@ const emptyForm = {
   status: "aktif",
 };
 
-export default function UsersClient({ currentUserId }) {
+export default function UsersClient({ currentUserId, currentUserRole }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterRole, setFilterRole] = useState("");
@@ -41,6 +43,18 @@ export default function UsersClient({ currentUserId }) {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+
+  const isSuperAdmin = currentUserRole === "super_admin";
+
+  /** Apakah user login boleh mengelola baris ini? Admin biasa tidak boleh menyentuh super admin. */
+  function canManageRow(u) {
+    if (u.id === currentUserId) return false;
+    if (isSuperAdmin) return true;
+    return u.role !== "super_admin";
+  }
+
+  /** Role apa saja yang boleh dipilih di form. Admin biasa tidak bisa membuat super admin. */
+  const roleOptions = isSuperAdmin ? ROLES : ROLES.filter((r) => r.slug !== "super_admin");
 
   async function load() {
     setLoading(true);
@@ -223,13 +237,14 @@ export default function UsersClient({ currentUserId }) {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => openEdit(u)}
-                          className="rounded-md border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                          disabled={!canManageRow(u)}
+                          className="rounded-md border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => remove(u)}
-                          disabled={u.id === currentUserId}
+                          disabled={!canManageRow(u)}
                           className="rounded-md border-red-100 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           Hapus
@@ -305,7 +320,7 @@ export default function UsersClient({ currentUserId }) {
                   onChange={(e) => setForm({ ...form, role: e.target.value })}
                   className="input"
                 >
-                  {ROLES.map((r) => (
+                  {roleOptions.map((r) => (
                     <option key={r.slug} value={r.slug}>
                       {r.nama}
                     </option>

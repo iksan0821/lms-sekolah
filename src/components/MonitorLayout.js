@@ -8,7 +8,7 @@ export default async function MonitorLayout({ children, role, base, title }) {
   const session = await getSession();
   if (!session) redirect("/");
   if (session.role !== role) {
-    const home = { admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru", siswa: "/siswa" };
+    const home = { admin: "/admin", super_admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru", siswa: "/siswa" };
     redirect(home[session.role] || "/");
   }
 

@@ -8,7 +8,7 @@ export default async function SiswaLayout({ children }) {
   const session = await getSession();
   if (!session) redirect("/");
   if (session.role !== "siswa") {
-    const home = { admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru" };
+    const home = { admin: "/admin", super_admin: "/admin", kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru" };
     redirect(home[session.role] || "/");
   }
   return (

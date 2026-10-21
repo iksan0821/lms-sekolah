@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getSession, isAdminRole } from "@/lib/auth";
 import AdminSidebar from "@/components/AdminSidebar";
 
 export const metadata = { title: "Dashboard Admin - SMK Citra Negara" };
@@ -7,7 +7,7 @@ export const metadata = { title: "Dashboard Admin - SMK Citra Negara" };
 export default async function AdminLayout({ children }) {
   const session = await getSession();
   if (!session) redirect("/");
-  if (session.role !== "admin") {
+  if (!isAdminRole(session.role)) {
     const home = { kepsek: "/kepsek", kurikulum: "/kurikulum", guru: "/guru", siswa: "/siswa" };
     redirect(home[session.role] || "/");
   }

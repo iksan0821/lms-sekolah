@@ -1,12 +1,30 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { query } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getSession, isAdminRole } from "@/lib/auth";
 
 async function requireAdmin() {
   const session = await getSession();
-  if (!session || session.role !== "admin") return null;
+  if (!session || !["admin", "super_admin"].includes(session.role)) return null;
   return session;
+}
+
+/**
+ * Cek apakah session boleh mengelola user dengan role `targetRole`.
+ * Super admin boleh mengatur semuanya (termasuk menghapus admin),
+ * sedangkan admin biasa TIDAK boleh menyentuh akun super admin.
+ */
+function canManage(session, targetRole) {
+  if (session.role === "super_admin") return true;
+  return targetRole !== "super_admin";
+}
+
+async function getTargetUserRole(id) {
+  const rows = await query(
+    "SELECT r.slug AS role FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = ? LIMIT 1",
+    [id]
+  );
+  return rows[0]?.role || null;
 }
 
 // PUT: update user
@@ -17,6 +35,29 @@ export async function PUT(request, { params }) {
   try {
     const { id } = await params;
     const body = await request.json();
+
+    // Admin biasa tidak boleh mengubah akun super admin
+    const targetRole = await getTargetUserRole(id);
+    if (targetRole && !canManage(session, targetRole)) {
+      return NextResponse.json(
+        { success: false, message: "Hanya Super Admin yang dapat mengubah akun Super Admin." },
+        { status: 403 }
+      );
+    }
+    // Hanya super admin boleh menjadikan/mengubah akun menjadi super admin
+    if (body.role === "super_admin" && session.role !== "super_admin") {
+      return NextResponse.json(
+        { success: false, message: "Hanya Super Admin yang dapat mengatur role Super Admin." },
+        { status: 403 }
+      );
+    }
+    if (targetRole === "super_admin" && body.role && body.role !== "super_admin" && session.role !== "super_admin") {
+      return NextResponse.json(
+        { success: false, message: "Hanya Super Admin yang dapat mengatur role Super Admin." },
+        { status: 403 }
+      );
+    }
+
     const { nama, username, email, password, role, nip, nis, jenis_kelamin, no_telepon, status } = body;
 
     const roleRow = await query("SELECT id FROM roles WHERE slug = ? LIMIT 1", [role]);
@@ -60,6 +101,22 @@ export async function DELETE(request, { params }) {
     if (Number(id) === Number(session.id)) {
       return NextResponse.json({ success: false, message: "Anda tidak dapat menghapus akun sendiri." }, { status: 400 });
     }
+
+    // Hanya super admin yang boleh menghapus admin; admin biasa tidak boleh menyentuh super admin
+    const targetRole = await getTargetUserRole(id);
+    if (targetRole && !canManage(session, targetRole)) {
+      return NextResponse.json(
+        { success: false, message: "Hanya Super Admin yang dapat menghapus akun ini." },
+        { status: 403 }
+      );
+    }
+    if (targetRole === "admin" && session.role !== "super_admin") {
+      return NextResponse.json(
+        { success: false, message: "Hanya Super Admin yang dapat menghapus akun admin." },
+        { status: 403 }
+      );
+    }
+
     await query("DELETE FROM users WHERE id = ?", [id]);
     return NextResponse.json({ success: true, message: "User berhasil dihapus." });
   } catch (err) {

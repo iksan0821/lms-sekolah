@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifySession, COOKIE_NAME, ROLE_HOME } from "@/lib/auth";
+import { verifySession, COOKIE_NAME, ROLE_HOME, isAdminRole } from "@/lib/auth";
 
 const PROTECTED_PREFIX = ["/admin", "/kepsek", "/kurikulum", "/guru", "/siswa"];
 
@@ -17,8 +17,10 @@ export async function middleware(request) {
     return NextResponse.redirect(url);
   }
 
-  // Pastikan user hanya mengakses area sesuai role-nya
-  const rolePrefix = ROLE_HOME[session.role];
+  // Pastikan user hanya mengakses area sesuai role-nya (super admin boleh ke /admin)
+  const rolePrefix = isAdminRole(session.role) && pathname.startsWith("/admin")
+    ? "/admin"
+    : ROLE_HOME[session.role];
   if (rolePrefix && !pathname.startsWith(rolePrefix)) {
     const url = request.nextUrl.clone();
     url.pathname = rolePrefix;

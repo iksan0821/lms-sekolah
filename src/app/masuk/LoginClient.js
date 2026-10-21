@@ -259,6 +259,8 @@ export default function LoginClient() {
 
       <p className="mt-6 text-center text-xs text-white/60">
         &copy; {new Date().getFullYear()} SMK Citra Negara - Next.js + MySQL (Laragon)
+        <br />
+        Dikembangkan oleh <span className="font-semibold text-white">Iksan</span>
       </p>
     </div>
   );
