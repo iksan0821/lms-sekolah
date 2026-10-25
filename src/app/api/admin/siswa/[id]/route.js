@@ -24,6 +24,17 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "Username sudah dipakai." }, { status: 409 });
     }
 
+    // Cek duplikasi email terhadap akun lain (email UNIQUE di DB)
+    if (email) {
+      const dupEmail = await query(
+        "SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1",
+        [email, id]
+      );
+      if (dupEmail.length) {
+        return NextResponse.json({ success: false, message: "Email sudah dipakai akun lain." }, { status: 409 });
+      }
+    }
+
     let sql = `UPDATE users SET nama=?, username=?, email=?, nis=?, jenis_kelamin=?, no_telepon=?, status=?`;
     const vals = [nama, username, email || null, nis || null, jenis_kelamin || null, no_telepon || null, status || "aktif"];
     if (password) {
@@ -34,7 +45,7 @@ export async function PUT(request, { params }) {
     vals.push(id);
     await query(sql, vals);
 
-    // Upsert baris tabel siswa
+    // Upsert baris tabel siswa (kelas, nis, nama wali)
     const s = await query("SELECT id FROM siswa WHERE user_id = ? LIMIT 1", [id]);
     if (s.length) {
       await query(
@@ -43,16 +54,21 @@ export async function PUT(request, { params }) {
       );
     } else {
       await query(
-        "INSERT INTO siswa (user_id, kelas_id, nis, nama_wali) VALUES (?, ?, ?)",
+        "INSERT INTO siswa (user_id, kelas_id, nis, nama_wali) VALUES (?, ?, ?, ?)",
         [id, kelas_id || null, nis || null, nama_wali || null]
       );
     }
-
-    return NextResponse.json({ success: true, message: "Data siswa berhasil diperbarui." });
   } catch (err) {
+    if (err && err.code === "ER_DUP_ENTRY") {
+      const pesan = String(err.sqlMessage || "").includes("email")
+        ? "Email sudah dipakai akun lain."
+        : "Username sudah dipakai akun lain.";
+      return NextResponse.json({ success: false, message: pesan }, { status: 409 });
+    }
     console.error("Update siswa error:", err);
     return NextResponse.json({ success: false, message: "Gagal memperbarui siswa." }, { status: 500 });
   }
+  return NextResponse.json({ success: true, message: "Data siswa berhasil diperbarui." });
 }
 
 // DELETE: hapus siswa

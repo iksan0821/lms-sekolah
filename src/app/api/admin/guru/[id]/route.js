@@ -24,6 +24,17 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "Username sudah dipakai." }, { status: 409 });
     }
 
+    // Cek duplikasi email terhadap akun lain (email UNIQUE di DB)
+    if (email) {
+      const dupEmail = await query(
+        "SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1",
+        [email, id]
+      );
+      if (dupEmail.length) {
+        return NextResponse.json({ success: false, message: "Email sudah dipakai akun lain." }, { status: 409 });
+      }
+    }
+
     let sql = `UPDATE users SET nama=?, username=?, email=?, nip=?, jenis_kelamin=?, no_telepon=?, status=?`;
     const vals = [nama, username, email || null, nip || null, jenis_kelamin || null, no_telepon || null, status || "aktif"];
 
@@ -37,6 +48,12 @@ export async function PUT(request, { params }) {
     await query(sql, vals);
     return NextResponse.json({ success: true, message: "Data guru berhasil diperbarui." });
   } catch (err) {
+    if (err && err.code === "ER_DUP_ENTRY") {
+      const pesan = String(err.sqlMessage || "").includes("email")
+        ? "Email sudah dipakai akun lain."
+        : "Username sudah dipakai akun lain.";
+      return NextResponse.json({ success: false, message: pesan }, { status: 409 });
+    }
     console.error("Update guru error:", err);
     return NextResponse.json({ success: false, message: "Gagal memperbarui guru." }, { status: 500 });
   }
