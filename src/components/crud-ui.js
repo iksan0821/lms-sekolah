@@ -1,4 +1,6 @@
-"use client";
+﻿"use client";
+
+import { useBahasa } from "@/lib/i18n";
 
 // Gaya input global dipakai lewat class .input (lihat crudStyles)
 export const inputStyle = {
@@ -86,20 +88,21 @@ export function PageHeader({ title, subtitle, actionLabel, onAction }) {
 
 // Tombol aksi standar pada tabel
 export function RowActions({ onEdit, onDelete, deleteDisabled }) {
+  const { t } = useBahasa();
   return (
     <div className="flex justify-end gap-2">
       <button
         onClick={onEdit}
         className="rounded-md border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
       >
-        Edit
+        {t("edit")}
       </button>
       <button
         onClick={onDelete}
         disabled={deleteDisabled}
         className="rounded-md border-red-100 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Hapus
+        {t("hapus")}
       </button>
     </div>
   );

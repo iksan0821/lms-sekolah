@@ -22,7 +22,7 @@ export default function MapelClient() {
   }
 
   useEffect(() => {
-    load();
+    queueMicrotask(load);
   }, []);
 
   function openCreate() {

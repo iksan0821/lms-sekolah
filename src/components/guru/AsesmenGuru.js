@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useGuru, PageTitle, Loading, Table, EmptyRow } from "@/components/guru-ui";
+import UjianGuru from "@/components/guru/UjianGuru";
 
 export default function AsesmenGuru() {
   const { data, loading, error } = useGuru("asesmen");
-  const [tab, setTab] = useState("tugas");
+  const [tab, setTab] = useState("quiz");
 
   const ujianStatus = (s) => {
     const map = { draft: "bg-slate-100 text-slate-500", berlangsung: "bg-amber-100 text-amber-700", selesai: "bg-brand-50 text-brand-dark" };
@@ -18,7 +19,7 @@ export default function AsesmenGuru() {
       {error && <div className="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>}
 
       <div className="mb-4 inline-flex rounded-lg border-slate-200 bg-white p-1 shadow-sm">
-        {[{ k: "tugas", label: "Tugas" }, { k: "ujian", label: "Ujian / Latihan" }].map((t) => (
+        {[{ k: "quiz", label: "Kuis / Latihan" }, { k: "tugas", label: "Tugas" }].map((t) => (
           <button
             key={t.k}
             onClick={() => setTab(t.k)}
@@ -31,6 +32,8 @@ export default function AsesmenGuru() {
 
       {loading ? (
         <Loading />
+      ) : tab === "quiz" ? (
+        <UjianGuru />
       ) : tab === "tugas" ? (
         <Table columns={["Judul Tugas", "Mapel", "Kelas", "Deadline", "Terkumpul"]}>
           {data?.tugas?.length ? (

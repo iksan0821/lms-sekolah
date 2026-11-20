@@ -1,8 +1,10 @@
-"use client";
+﻿"use client";
 
 import { useMonitor, PageTitle, Card, Loading } from "@/components/monitor-ui";
+import { useBahasa } from "@/lib/i18n";
 
 export default function MonitorDashboard({ nama }) {
+  const { t } = useBahasa();
   const { data, loading, error } = useMonitor("ringkasan");
 
   const sapaan = nama ? nama.split(" ")[0] : "Pengguna";
@@ -12,20 +14,20 @@ export default function MonitorDashboard({ nama }) {
 
   const stat = data
     ? [
-        { label: "Guru", value: data.totalGuru },
-        { label: "Siswa", value: data.totalSiswa },
-        { label: "Kelas", value: data.totalKelas },
-        { label: "Materi", value: data.totalMateri },
-        { label: "Tugas", value: data.totalTugas },
-        { label: "Ujian Online", value: data.totalUjian },
-        { label: "Ujian Aktif", value: data.ujianAktif },
-        { label: "Rata Nilai", value: data.rataNilai ?? "-" },
+        { label: t("guru"), value: data.totalGuru },
+        { label: t("data siswa"), value: data.totalSiswa },
+        { label: t("kelas"), value: data.totalKelas },
+        { label: t("materi"), value: data.totalMateri },
+        { label: t("tugas"), value: data.totalTugas },
+        { label: t("ujian online"), value: data.totalUjian },
+        { label: t("ujian aktif"), value: data.ujianAktif },
+        { label: t("rata nilai"), value: data.rataNilai ?? "-" },
       ]
     : [];
 
   return (
     <div className="mx-auto max-w-6xl">
-      <PageTitle title={`Selamat datang, ${sapaan}`} subtitle={today} />
+      <PageTitle title={`${t("selamat datang")}, ${sapaan}`} subtitle={today} />
 
       {error && (
         <div className="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
@@ -47,7 +49,7 @@ export default function MonitorDashboard({ nama }) {
 
           <div className="mt-6">
             <Card>
-              <h2 className="mb-4 text-base font-semibold text-slate-800">Aktivitas Terbaru</h2>
+              <h2 className="mb-4 text-base font-semibold text-slate-800">{t("aktivitas terbaru")}</h2>
               {data?.aktivitas?.length ? (
                 <ul className="space-y-3">
                   {data.aktivitas.map((a, i) => (
@@ -61,7 +63,7 @@ export default function MonitorDashboard({ nama }) {
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-slate-400">Belum ada aktivitas.</p>
+                <p className="text-sm text-slate-400">{t("belum ada aktivitas")}</p>
               )}
             </Card>
           </div>

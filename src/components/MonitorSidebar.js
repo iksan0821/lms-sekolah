@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useBahasa } from "@/lib/i18n";
 
 // Menu untuk role kepsek & kurikulum (hanya pantau, tanpa CRUD)
 function buildMenu(base, role) {
@@ -49,6 +50,7 @@ export default function MonitorSidebar({ user, base }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { bahasa, t } = useBahasa();
   const menu = buildMenu(base, user?.role);
 
   async function logout() {
@@ -73,7 +75,7 @@ export default function MonitorSidebar({ user, base }) {
             <span className={active ? "text-brand" : "text-white/70 group-hover:text-white"}>
               <Icon name={m.icon} />
             </span>
-            {m.label}
+            {t(m.label)}
             {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" />}
           </Link>
         );
@@ -89,7 +91,7 @@ export default function MonitorSidebar({ user, base }) {
           <span className="text-sm font-semibold text-slate-800">{user?.role_nama}</span>
         </div>
         <button onClick={() => setOpen((v) => !v)} className="rounded-lg border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
-          {open ? "Tutup" : "Menu"}
+          {open ? t("tutup") : t("menu")}
         </button>
       </div>
 
@@ -108,7 +110,7 @@ export default function MonitorSidebar({ user, base }) {
 
         <div className="px-5 py-3">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Mode Pantau
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> {t("mode pantau")}
           </span>
         </div>
 
@@ -128,7 +130,7 @@ export default function MonitorSidebar({ user, base }) {
             onClick={logout}
             className="w-full rounded-lg bg-white px-3 py-2 text-sm font-semibold text-brand-dark transition hover:bg-rose-600 hover:text-white"
           >
-            Keluar
+            {t("keluar")}
           </button>
         </div>
       </aside>

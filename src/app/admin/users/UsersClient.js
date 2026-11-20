@@ -68,7 +68,7 @@ export default function UsersClient({ currentUserId, currentUserRole }) {
   }
 
   useEffect(() => {
-    load();
+    queueMicrotask(load);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterRole]);
 

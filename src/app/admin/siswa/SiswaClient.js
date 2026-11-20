@@ -41,8 +41,10 @@ export default function SiswaClient() {
   }
 
   useEffect(() => {
-    load();
-    loadKelas();
+    queueMicrotask(() => {
+      load();
+      loadKelas();
+    });
   }, []);
 
   function openCreate() {

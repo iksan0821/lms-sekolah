@@ -19,7 +19,7 @@ export default function AsesmenSiswa() {
     setRows(d.data || []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { queueMicrotask(load); }, []);
 
   async function kerjakan(u) {
     setMsg(null); setSelesai(null);

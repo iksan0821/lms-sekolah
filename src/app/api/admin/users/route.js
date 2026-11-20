@@ -41,7 +41,8 @@ export async function GET(request) {
 
 // POST: tambah user baru
 export async function POST(request) {
-  if (!(await requireAdmin())) {
+  const session = await requireAdmin();
+  if (!session) {
     return NextResponse.json({ success: false, message: "Akses ditolak." }, { status: 403 });
   }
   try {

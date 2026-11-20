@@ -1,8 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
-
-// Hook ambil data dari API guru
+import { useBahasa } from "@/lib/i18n";
 export function useGuru(bagian, deps = []) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,7 +16,7 @@ export function useGuru(bagian, deps = []) {
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(); }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { queueMicrotask(load); }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, loading, error, reload: load };
 }
@@ -42,17 +41,19 @@ export function Card({ children, className = "" }) {
   return <div className={`rounded-2xl border-slate-200 bg-white p-5 shadow-sm ${className}`}>{children}</div>;
 }
 
-export function Loading({ text = "Memuat data..." }) {
-  return <div className="rounded-2xl border-slate-200 bg-white p-10 text-center text-slate-400 shadow-sm">{text}</div>;
+export function Loading({ text }) {
+  const { t } = useBahasa();
+  return <div className="rounded-2xl border-slate-200 bg-white p-10 text-center text-slate-400 shadow-sm">{text ?? t("memuat data")}</div>;
 }
 
 export function Notice({ msg, onClose }) {
+  const { t } = useBahasa();
   if (!msg) return null;
   const st = { error: "bg-rose-50 text-rose-700", success: "bg-brand-50 text-brand-dark", info: "bg-slate-100 text-slate-600" };
   return (
     <div className={`mb-4 flex items-center justify-between rounded-lg px-4 py-2.5 text-sm ${st[msg.type] || st.info}`}>
       <span>{msg.text}</span>
-      {onClose && <button onClick={onClose} className="text-xs opacity-60 hover:opacity-100">Tutup</button>}
+      {onClose && <button onClick={onClose} className="text-xs opacity-60 hover:opacity-100">{t("tutup")}</button>}
     </div>
   );
 }
@@ -72,8 +73,9 @@ export function Table({ columns, children }) {
   );
 }
 
-export function EmptyRow({ colSpan, text = "Belum ada data." }) {
-  return <tr><td colSpan={colSpan} className="px-4 py-10 text-center text-slate-400">{text}</td></tr>;
+export function EmptyRow({ colSpan, text }) {
+  const { t } = useBahasa();
+  return <tr><td colSpan={colSpan} className="px-4 py-10 text-center text-slate-400">{text ?? t("belum ada data")}</td></tr>;
 }
 
 export function Modal({ title, onClose, children, wide }) {
@@ -104,10 +106,11 @@ export function Field({ label, required, children }) {
 export const inputCls = "w-full rounded-lg border-slate-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand-500/20";
 
 export function RowActions({ onEdit, onDelete }) {
+  const { t } = useBahasa();
   return (
     <div className="flex justify-end gap-2">
-      <button onClick={onEdit} className="rounded-md border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">Edit</button>
-      <button onClick={onDelete} className="rounded-md border-rose-100 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50">Hapus</button>
+      <button onClick={onEdit} className="rounded-md border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">{t("edit")}</button>
+      <button onClick={onDelete} className="rounded-md border-rose-100 px-3 py-1.5 text-xs font-medium text-rose-600 hover:bg-rose-50">{t("hapus")}</button>
     </div>
   );
 }

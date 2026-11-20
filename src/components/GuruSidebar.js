@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useBahasa } from "@/lib/i18n";
 
 const MENU = [
   { href: "/guru", label: "Dashboard", icon: "grid" },
@@ -45,6 +46,7 @@ export default function GuruSidebar({ user }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { bahasa, t } = useBahasa();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -68,7 +70,7 @@ export default function GuruSidebar({ user }) {
             <span className={active ? "text-brand" : "text-white/70 group-hover:text-white"}>
               <Icon name={m.icon} />
             </span>
-            {m.label}
+            {t(m.label)}
             {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" />}
           </Link>
         );
@@ -84,7 +86,7 @@ export default function GuruSidebar({ user }) {
           <span className="text-sm font-semibold text-slate-800">Panel Guru</span>
         </div>
         <button onClick={() => setOpen((v) => !v)} className="rounded-lg border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">
-          {open ? "Tutup" : "Menu"}
+          {open ? t("tutup") : t("menu")}
         </button>
       </div>
 
@@ -97,7 +99,7 @@ export default function GuruSidebar({ user }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-slate-900">LMS</div>
           <div>
             <p className="text-sm font-bold text-white">SMK Citra Negara</p>
-            <p className="text-xs text-white/70">Panel Guru</p>
+            <p className="text-xs text-white/70">{t("panel guru")}</p>
           </div>
         </div>
 
@@ -117,7 +119,7 @@ export default function GuruSidebar({ user }) {
             onClick={logout}
             className="w-full rounded-lg bg-white px-3 py-2 text-sm font-semibold text-brand-dark transition hover:bg-rose-600 hover:text-white"
           >
-            Keluar
+            {t("keluar")}
           </button>
         </div>
       </aside>

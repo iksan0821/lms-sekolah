@@ -51,7 +51,7 @@ export default function AbsensiGuru() {
     }
   }
 
-  useEffect(() => { if (kelasId) muatRiwayat(); }, [kelasId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { queueMicrotask(() => { if (kelasId) muatRiwayat(); }); }, [kelasId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let batal = false;

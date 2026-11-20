@@ -24,7 +24,7 @@ export default function MateriGuru() {
     setOpsi(r2.data || { kelas: [], mapel: [] });
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { queueMicrotask(load); }, []);
 
   function bukaTambah() { setForm(empty); setMsg(null); setShow(true); }
   function bukaEdit(m) {

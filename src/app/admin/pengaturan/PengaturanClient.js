@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Field, PageHeader } from "@/components/crud-ui";
+import PengaturanBahasa from "@/components/PengaturanBahasa";
+import { useBahasa } from "@/lib/i18n";
 
 const DAFTAR = [
   { kunci: "nama_sekolah", label: "Nama Sekolah" },
@@ -16,6 +18,7 @@ export default function PengaturanClient({ isSuperAdmin }) {
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
   const [info, setInfo] = useState(null);
+  const { t } = useBahasa();
 
   async function load() {
     const res = await fetch("/api/admin/pengaturan");
@@ -65,11 +68,11 @@ export default function PengaturanClient({ isSuperAdmin }) {
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader
-        title="Pengaturan Sistem"
+        title={t("pengaturan")}
         subtitle={
           isSuperAdmin
-            ? "Atur identitas sekolah, tahun ajaran, dan semester."
-            : "Identitas sekolah, tahun ajaran, dan semester aktif."
+            ? t("atur identitas sekolah, tahun ajaran, dan semester")
+            : t("identitas sekolah, tahun ajaran, dan semester aktif")
         }
       />
 
@@ -85,7 +88,7 @@ export default function PengaturanClient({ isSuperAdmin }) {
 
       <div className="rounded-2xl border-slate-200 bg-white p-6 shadow-sm">
         {loading ? (
-          <p className="py-8 text-center text-sm text-slate-400">Memuat pengaturan...</p>
+          <p className="py-8 text-center text-sm text-slate-400">{t("memuat pengaturan")}</p>
         ) : (
           <form onSubmit={simpan}>
             <div className="grid grid-cols-1 gap-4">
@@ -132,7 +135,7 @@ export default function PengaturanClient({ isSuperAdmin }) {
                   disabled={saving}
                   className="rounded-lg brand-gradient px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:opacity-60"
                 >
-                  {saving ? "Menyimpan..." : "Simpan Pengaturan"}
+                  {saving ? t("menyimpan") : t("simpan pengaturan")}
                 </button>
               </div>
             )}
@@ -140,10 +143,13 @@ export default function PengaturanClient({ isSuperAdmin }) {
         )}
       </div>
 
+      {/* Pengaturan bahasa */}
+      <PengaturanBahasa />
+
       {/* Informasi teknis (read-only) */}
       <div className="mt-6 rounded-2xl border-slate-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500">
-          Informasi Aplikasi
+          {t("informasi aplikasi")}
         </h2>
         <dl className="divide-y divide-slate-100 text-sm">
           {[

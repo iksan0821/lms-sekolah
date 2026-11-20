@@ -37,7 +37,7 @@ export default function UjianGuru() {
     setOpsi(r2.data || { kelas: [], mapel: [] });
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { queueMicrotask(load); }, []);
 
   function bukaTambah() { setForm(emptyU); setMsg(null); setShow(true); }
   function bukaEdit(u) {

@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
+import { useBahasa } from "@/lib/i18n";
 
 // Hook sederhana untuk mengambil data dari API monitor (read-only)
 export function useMonitor(bagian) {
@@ -10,7 +11,7 @@ export function useMonitor(bagian) {
 
   useEffect(() => {
     let aktif = true;
-    setLoading(true);
+    queueMicrotask(() => setLoading(true));
     fetch(`/api/monitor?bagian=${bagian}`)
       .then((r) => r.json())
       .then((d) => {
@@ -29,12 +30,13 @@ export function useMonitor(bagian) {
 }
 
 export function PageTitle({ title, subtitle }) {
+  const { t } = useBahasa();
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2">
         <h1 className="text-2xl font-bold text-slate-800">{title}</h1>
         <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
-          Mode Pantau
+          {t("mode pantau")}
         </span>
       </div>
       {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
@@ -50,10 +52,11 @@ export function Card({ children, className = "" }) {
   );
 }
 
-export function Loading({ text = "Memuat data..." }) {
+export function Loading({ text }) {
+  const { t } = useBahasa();
   return (
     <div className="rounded-2xl border-slate-200 bg-white p-10 text-center text-slate-400 shadow-sm">
-      {text}
+      {text ?? t("memuat data")}
     </div>
   );
 }
@@ -77,11 +80,12 @@ export function Table({ columns, children }) {
   );
 }
 
-export function EmptyRow({ colSpan, text = "Belum ada data." }) {
+export function EmptyRow({ colSpan, text }) {
+  const { t } = useBahasa();
   return (
     <tr>
       <td colSpan={colSpan} className="px-4 py-10 text-center text-slate-400">
-        {text}
+        {text ?? t("belum ada data")}
       </td>
     </tr>
   );

@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useBahasa } from "@/lib/i18n";
 
 const MENU = [
   { href: "/siswa", label: "Dashboard", icon: "grid" },
@@ -31,6 +32,7 @@ export default function SiswaSidebar({ user }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { bahasa, t } = useBahasa();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -46,7 +48,7 @@ export default function SiswaSidebar({ user }) {
           <Link key={m.href} href={m.href} onClick={() => setOpen(false)}
             className={"group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition " + (active ? "bg-white/95 text-brand-dark shadow-lg shadow-black/10" : "text-white/80 hover:bg-white/10 hover:text-white")}>
             <span className={active ? "text-brand" : "text-white/70 group-hover:text-white"}><Icon name={m.icon} /></span>
-            {m.label}
+            {t(m.label)}
             {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" />}
           </Link>
         );
@@ -59,9 +61,9 @@ export default function SiswaSidebar({ user }) {
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur lg:hidden">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-xs font-bold text-white">LMS</div>
-          <span className="text-sm font-semibold text-slate-800">Panel Siswa</span>
+          <span className="text-sm font-semibold text-slate-800">{t("panel siswa")}</span>
         </div>
-        <button onClick={() => setOpen((v) => !v)} className="rounded-lg border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">{open ? "Tutup" : "Menu"}</button>
+        <button onClick={() => setOpen((v) => !v)} className="rounded-lg border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50">{open ? t("tutup") : t("menu")}</button>
       </div>
 
       <aside className={"sidebar-gradient fixed inset-y-0 left-0 z-40 flex w-64 flex-col text-white shadow-2xl transition-transform lg:static lg:translate-x-0 " + (open ? "translate-x-0" : "-translate-x-full")}>
@@ -69,7 +71,7 @@ export default function SiswaSidebar({ user }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-slate-900">LMS</div>
           <div>
             <p className="text-sm font-bold text-white">SMK Citra Negara</p>
-            <p className="text-xs text-white/70">Panel Siswa</p>
+            <p className="text-xs text-white/70">{t("panel siswa")}</p>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto py-3">{nav}</div>
@@ -81,7 +83,7 @@ export default function SiswaSidebar({ user }) {
               <p className="truncate text-xs text-white/70">{user?.role_nama || "Siswa"}</p>
             </div>
           </div>
-          <button onClick={logout} className="w-full rounded-lg bg-white px-3 py-2 text-sm font-semibold text-brand-dark transition hover:bg-rose-600 hover:text-white">Keluar</button>
+          <button onClick={logout} className="w-full rounded-lg bg-white px-3 py-2 text-sm font-semibold text-brand-dark transition hover:bg-rose-600 hover:text-white">{t("keluar")}</button>
         </div>
       </aside>
 

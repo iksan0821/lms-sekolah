@@ -32,7 +32,7 @@ export default function GuruClient() {
   }
 
   useEffect(() => {
-    load();
+    queueMicrotask(load);
   }, []);
 
   function openCreate() {

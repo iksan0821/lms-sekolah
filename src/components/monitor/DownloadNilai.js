@@ -157,7 +157,7 @@ export default function DownloadNilai() {
         </Table>
       ) : (
         <div className="rounded-2xl border-slate-200 bg-white p-10 text-center text-slate-400 shadow-sm">
-          Pilih mata pelajaran lalu klik "Tampilkan Nilai".
+          Pilih mata pelajaran lalu klik &quot;Tampilkan Nilai&quot;.
         </div>
       )}
     </div>

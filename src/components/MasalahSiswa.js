@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 
@@ -80,7 +80,7 @@ export default function MasalahSiswa({ judul, subtitle, role }) {
   }, [filterStatus, filterPrioritas]);
 
   useEffect(() => {
-    muat();
+    queueMicrotask(muat);
   }, [muat]);
 
   // Muat daftar guru untuk penugasan tindak lanjut sejak awal.
@@ -270,7 +270,7 @@ export default function MasalahSiswa({ judul, subtitle, role }) {
                   <p className="mt-2 text-base font-bold text-slate-800">
                     {m.siswa || "-"}
                     <span className="ml-2 text-xs font-normal text-slate-400">
-                      {m.nis ? `NIS ${m.nis}` : ""} {m.kelas ? `• ${m.kelas}` : ""}
+                      {m.nis ? `NIS ${m.nis}` : ""} {m.kelas ? `â€¢ ${m.kelas}` : ""}
                     </span>
                   </p>
                   <p className="mt-1 text-sm text-slate-600">{m.deskripsi}</p>
@@ -427,7 +427,7 @@ export default function MasalahSiswa({ judul, subtitle, role }) {
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <h2 className="text-lg font-bold text-slate-800">Tindak Lanjuti</h2>
             <p className="mt-1 text-sm text-slate-500">
-              {detail.siswa} • {detail.kelas || "Tanpa kelas"} • {labelOf(JENIS, detail.jenis)}
+              {detail.siswa} â€¢ {detail.kelas || "Tanpa kelas"} â€¢ {labelOf(JENIS, detail.jenis)}
             </p>
             <p className="mt-3 rounded-xl bg-slate-50 p-3 text-sm text-slate-700">{detail.deskripsi}</p>
 

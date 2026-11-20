@@ -29,7 +29,8 @@ async function getTargetUserRole(id) {
 
 // PUT: update user
 export async function PUT(request, { params }) {
-  if (!(await requireAdmin())) {
+  const session = await requireAdmin();
+  if (!session) {
     return NextResponse.json({ success: false, message: "Akses ditolak." }, { status: 403 });
   }
   try {

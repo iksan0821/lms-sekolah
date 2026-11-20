@@ -1,0 +1,412 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+
+// Daftar bahasa yang tersedia
+export const BAHASA = [
+  { kode: "id", label: "Indonesia", bendera: "\u{1F1EE}\u{1F1E9}" },
+  { kode: "en", label: "English", bendera: "\u{1F1EC}\u{1F1E7}" },
+  { kode: "ja", label: "Nihongo (Jepang)", bendera: "\u{1F1EF}\u{1F1F5}" },
+  { kode: "de", label: "Deutsch (Jerman)", bendera: "\u{1F1E9}\u{1F1EA}" },
+];
+
+// Kamus terjemahan menu & teks umum per role
+// Kunci = label asli (Indonesia) huruf kecil
+const KAMUS = {
+  id: {
+    // Umum
+    dashboard: "Dashboard",
+    keluar: "Keluar",
+    menu: "Menu",
+    tutup: "Tutup",
+    bahasa: "Bahasa",
+    "pilih bahasa tampilan aplikasi": "Pilih bahasa tampilan aplikasi",
+    // Dashboard & teks umum
+    "selamat datang": "Selamat datang",
+    "memuat data": "Memuat data...",
+    "belum ada data": "Belum ada data.",
+    "belum ada aktivitas": "Belum ada aktivitas.",
+    edit: "Edit",
+    hapus: "Hapus",
+    simpan: "Simpan",
+    // Admin
+    "total pengguna": "Total Pengguna",
+    "semua role": "Semua role",
+    "total kelas": "Total Kelas",
+    "kelas aktif": "Kelas aktif",
+    "mata pelajaran": "Mata Pelajaran",
+    terdaftar: "Terdaftar",
+    guru: "Guru",
+    pengajar: "Pengajar",
+    "kelola pengguna": "Kelola Pengguna",
+    "distribusi pengguna per role": "Distribusi Pengguna per Role",
+    "aktivitas terbaru": "Aktivitas Terbaru",
+    orang: "orang",
+    // Guru
+    "kelas diajar": "Kelas Diajar",
+    "total siswa": "Total Siswa",
+    materi: "Materi",
+    tugas: "Tugas",
+    "ujian / latihan": "Ujian / Latihan",
+    "rekap absensi": "Rekap Absensi",
+    hadir: "Hadir",
+    izin: "Izin",
+    sakit: "Sakit",
+    alpa: "Alpa",
+    // Siswa
+    "total tugas": "Total Tugas",
+    "ujian tersedia": "Ujian Tersedia",
+    "tugas dikumpul": "Tugas Dikumpul",
+    "rata nilai": "Rata Nilai",
+    "rekap kehadiran": "Rekap Kehadiran",
+    // Monitor
+    "ujian online": "Ujian Online",
+    "ujian aktif": "Ujian Aktif",
+    // Pengaturan
+    "pengaturan sistem": "Pengaturan Sistem",
+    "atur identitas sekolah, tahun ajaran, dan semester": "Atur identitas sekolah, tahun ajaran, dan semester.",
+    "identitas sekolah, tahun ajaran, dan semester aktif": "Identitas sekolah, tahun ajaran, dan semester aktif.",
+    "nama sekolah": "Nama Sekolah",
+    alamat: "Alamat",
+    "tahun ajaran aktif": "Tahun Ajaran Aktif",
+    "semester aktif": "Semester Aktif",
+    "memuat pengaturan": "Memuat pengaturan...",
+    menyimpan: "Menyimpan...",
+    "simpan pengaturan": "Simpan Pengaturan",
+    "informasi aplikasi": "Informasi Aplikasi",
+    // Admin
+    "manajemen user": "Manajemen User",
+    "data siswa": "Data Siswa",
+    "data guru": "Data Guru",
+    kelas: "Kelas",
+    jurusan: "Jurusan",
+    "mata pelajaran": "Mata Pelajaran",
+    "monitor pembelajaran": "Monitor Pembelajaran",
+    "pantau akun": "Pantau Akun",
+    "riwayat aktivitas": "Riwayat Aktivitas",
+    laporan: "Laporan",
+    pengumuman: "Pengumuman",
+    pengaturan: "Pengaturan",
+    "backup & pemulihan": "Backup & Pemulihan",
+    "panel administrator": "Panel Administrator",
+    // Guru
+    "siswa di kelas saya": "Siswa di Kelas Saya",
+    absensi: "Absensi",
+    asesmen: "Asesmen",
+    "upload materi": "Upload Materi",
+    "latihan soal / ujian": "Latihan Soal / Ujian",
+    "download nilai": "Download Nilai",
+    "panel guru": "Panel Guru",
+    // Siswa
+    "tugas / proyek": "Tugas / Proyek",
+    "panel siswa": "Panel Siswa",
+    // Monitor (kepsek/kurikulum)
+    "kinerja guru": "Kinerja Guru",
+    "tugas & materi": "Tugas & Materi",
+    "pantau ujian online": "Pantau Ujian Online",
+    "pantau jadwal pelajaran": "Pantau Jadwal Pelajaran",
+    "permasalahan siswa": "Permasalahan Siswa",
+    "mode pantau": "Mode Pantau",
+  },
+  en: {
+    dashboard: "Dashboard",
+    keluar: "Log out",
+    menu: "Menu",
+    tutup: "Close",
+    bahasa: "Language",
+    "pilih bahasa tampilan aplikasi": "Choose the application display language",
+    // Dashboard & common text
+    "selamat datang": "Welcome",
+    "memuat data": "Loading data...",
+    "belum ada data": "No data yet.",
+    "belum ada aktivitas": "No recent activity.",
+    edit: "Edit",
+    hapus: "Delete",
+    simpan: "Save",
+    // Admin
+    "total pengguna": "Total Users",
+    "semua role": "All roles",
+    "total kelas": "Total Classes",
+    "kelas aktif": "Active classes",
+    terdaftar: "Registered",
+    guru: "Teachers",
+    pengajar: "Teaching",
+    "kelola pengguna": "Manage Users",
+    "distribusi pengguna per role": "User Distribution per Role",
+    "aktivitas terbaru": "Recent Activity",
+    orang: "people",
+    // Guru
+    "kelas diajar": "Classes Taught",
+    "total siswa": "Total Students",
+    materi: "Materials",
+    tugas: "Assignments",
+    "ujian / latihan": "Exams / Exercises",
+    "rekap absensi": "Attendance Summary",
+    hadir: "Present",
+    izin: "Excused",
+    sakit: "Sick",
+    alpa: "Absent",
+    // Siswa
+    "total tugas": "Total Assignments",
+    "ujian tersedia": "Available Exams",
+    "tugas dikumpul": "Submitted Assignments",
+    "rata nilai": "Average Score",
+    "rekap kehadiran": "Attendance Summary",
+    // Monitor
+    "ujian online": "Online Exams",
+    "ujian aktif": "Active Exams",
+    // Pengaturan
+    "pengaturan sistem": "System Settings",
+    "atur identitas sekolah, tahun ajaran, dan semester": "Set school identity, academic year, and semester.",
+    "identitas sekolah, tahun ajaran, dan semester aktif": "School identity, academic year, and active semester.",
+    "nama sekolah": "School Name",
+    alamat: "Address",
+    "tahun ajaran aktif": "Active Academic Year",
+    "semester aktif": "Active Semester",
+    "memuat pengaturan": "Loading settings...",
+    menyimpan: "Saving...",
+    "simpan pengaturan": "Save Settings",
+    "informasi aplikasi": "Application Information",
+    "manajemen user": "User Management",
+    "data siswa": "Student Data",
+    "data guru": "Teacher Data",
+    kelas: "Classes",
+    jurusan: "Majors",
+    "mata pelajaran": "Subjects",
+    "monitor pembelajaran": "Learning Monitor",
+    "pantau akun": "Account Oversight",
+    "riwayat aktivitas": "Activity History",
+    laporan: "Reports",
+    pengumuman: "Announcements",
+    pengaturan: "Settings",
+    "backup & pemulihan": "Backup & Recovery",
+    "panel administrator": "Administrator Panel",
+    "siswa di kelas saya": "Students in My Class",
+    absensi: "Attendance",
+    asesmen: "Assessment",
+    "upload materi": "Upload Materials",
+    "latihan soal / ujian": "Exercises / Exams",
+    "download nilai": "Download Grades",
+    "panel guru": "Teacher Panel",
+    "tugas / proyek": "Assignments / Projects",
+    "panel siswa": "Student Panel",
+    "kinerja guru": "Teacher Performance",
+    "tugas & materi": "Assignments & Materials",
+    "pantau ujian online": "Online Exam Monitor",
+    "pantau jadwal pelajaran": "Schedule Monitor",
+    "permasalahan siswa": "Student Issues",
+    "mode pantau": "Monitor Mode",
+  },
+  ja: {
+    dashboard: "\u30c0\u30c3\u30b7\u30e5\u30dc\u30fc\u30c9",
+    keluar: "\u30ed\u30b0\u30a2\u30a6\u30c8",
+    menu: "\u30e1\u30cb\u30e5\u30fc",
+    tutup: "\u9589\u3058\u308b",
+    bahasa: "\u8a00\u8a9e",
+    "pilih bahasa tampilan aplikasi": "\u30a2\u30d7\u30ea\u306e\u8868\u793a\u8a00\u8a9e\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044",
+    "selamat datang": "\u3088\u3046\u3053\u305d",
+    "memuat data": "\u30c7\u30fc\u30bf\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...",
+    "belum ada data": "\u30c7\u30fc\u30bf\u304c\u3042\u308a\u307e\u305b\u3093\u3002",
+    "belum ada aktivitas": "\u30a2\u30af\u30c6\u30a3\u30d3\u30c6\u30a3\u306f\u3042\u308a\u307e\u305b\u3093\u3002",
+    edit: "\u7de8\u96c6",
+    hapus: "\u524a\u9664",
+    simpan: "\u4fdd\u5b58",
+    "total pengguna": "\u5229\u7528\u8005\u5408\u8a08",
+    "total kelas": "\u30af\u30e9\u30b9\u5408\u8a08",
+    terdaftar: "\u767b\u9332\u6e08\u307f",
+    guru: "\u6559\u5e2b",
+    pengajar: "\u62c5\u5f53",
+    "kelola pengguna": "\u30e6\u30fc\u30b6\u30fc\u7ba1\u7406",
+    "distribusi pengguna per role": "\u30ed\u30fc\u30eb\u5225\u5229\u7528\u8005\u5206\u5e03",
+    "aktivitas terbaru": "\u6700\u8fd1\u306e\u30a2\u30af\u30c6\u30a3\u30d3\u30c6\u30a3",
+    orang: "\u4eba",
+    "kelas diajar": "\u62c5\u5f53\u30af\u30e9\u30b9",
+    "total siswa": "\u751f\u5f92\u5408\u8a08",
+    materi: "\u6559\u6750",
+    tugas: "\u8ab2\u984c",
+    "ujian / latihan": "\u8a66\u9a13 / \u7df4\u7fd2",
+    "rekap absensi": "\u51fa\u5e2d\u307e\u3068\u3081",
+    hadir: "\u51fa\u5e2d",
+    izin: "\u6b20\u52e4",
+    sakit: "\u75c5\u6b20",
+    alpa: "\u6b20\u5e2d",
+    "total tugas": "\u8ab2\u984c\u5408\u8a08",
+    "ujian tersedia": "\u5229\u7528\u53ef\u80fd\u306a\u8a66\u9a13",
+    "tugas dikumpul": "\u63d0\u51fa\u6e08\u307f\u8ab2\u984c",
+    "rata nilai": "\u5e73\u5747\u70b9",
+    "rekap kehadiran": "\u51fa\u5e2d\u307e\u3068\u3081",
+    "ujian online": "\u30aa\u30f3\u30e9\u30a4\u30f3\u8a66\u9a13",
+    "ujian aktif": "\u5b9f\u65bd\u4e2d\u306e\u8a66\u9a13",
+    "pengaturan sistem": "\u30b7\u30b9\u30c6\u30e0\u8a2d\u5b9a",
+    "atur identitas sekolah, tahun ajaran, dan semester": "\u5b66\u6821\u60c5\u5831\u3001\u5b66\u5e74\u3001\u5b66\u671f\u3092\u8a2d\u5b9a\u3057\u307e\u3059\u3002",
+    "identitas sekolah, tahun ajaran, dan semester aktif": "\u5b66\u6821\u60c5\u5831\u3001\u5b66\u5e74\u3001\u73fe\u5728\u306e\u5b66\u671f\u3002",
+    "nama sekolah": "\u5b66\u6821\u540d",
+    alamat: "\u4f4f\u6240",
+    "tahun ajaran aktif": "\u73fe\u5728\u306e\u5b66\u5e74",
+    "semester aktif": "\u73fe\u5728\u306e\u5b66\u671f",
+    "memuat pengaturan": "\u8a2d\u5b9a\u3092\u8aad\u307f\u8fbc\u307f\u4e2d...",
+    menyimpan: "\u4fdd\u5b58\u4e2d...",
+    "simpan pengaturan": "\u8a2d\u5b9a\u3092\u4fdd\u5b58",
+    "informasi aplikasi": "\u30a2\u30d7\u30ea\u60c5\u5831",
+    "manajemen user": "\u30e6\u30fc\u30b6\u30fc\u7ba1\u7406",
+    "data siswa": "\u751f\u5f92\u30c7\u30fc\u30bf",
+    "data guru": "\u6559\u5e2b\u30c7\u30fc\u30bf",
+    kelas: "\u30af\u30e9\u30b9",
+    jurusan: "\u5b66\u79d1",
+    "mata pelajaran": "\u6559\u79d1",
+    "monitor pembelajaran": "\u5b66\u7fd2\u30e2\u30cb\u30bf\u30fc",
+    "pantau akun": "\u30a2\u30ab\u30a6\u30f3\u30c8\u76e3\u8996",
+    "riwayat aktivitas": "\u30a2\u30af\u30c6\u30a3\u30d3\u30c6\u30a3\u5c65\u6b74",
+    laporan: "\u30ec\u30dd\u30fc\u30c8",
+    pengumuman: "\u304a\u77e5\u3089\u305b",
+    pengaturan: "\u8a2d\u5b9a",
+    "backup & pemulihan": "\u30d0\u30c3\u30af\u30a2\u30c3\u30d7\u3068\u5fa9\u5143",
+    "panel administrator": "\u7ba1\u7406\u8005\u30d1\u30cd\u30eb",
+    "siswa di kelas saya": "\u62c5\u5f53\u30af\u30e9\u30b9\u306e\u751f\u5f92",
+    absensi: "\u51fa\u5e2d\u7ba1\u7406",
+    asesmen: "\u8a55\u4fa1",
+    "upload materi": "\u6559\u6750\u30a2\u30c3\u30d7\u30ed\u30fc\u30c9",
+    "latihan soal / ujian": "\u7df4\u7fd2\u554f\u984c / \u8a66\u9a13",
+    "download nilai": "\u6210\u7e3e\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9",
+    "panel guru": "\u6559\u5e2b\u30d1\u30cd\u30eb",
+    "tugas / proyek": "\u8ab2\u984c / \u30d7\u30ed\u30b8\u30a7\u30af\u30c8",
+    "panel siswa": "\u751f\u5f92\u30d1\u30cd\u30eb",
+    "kinerja guru": "\u6559\u5e2b\u306e\u696d\u7e3e",
+    "tugas & materi": "\u8ab2\u984c\u3068\u6559\u6750",
+    "pantau ujian online": "\u30aa\u30f3\u30e9\u30a4\u30f3\u8a66\u9a13\u76e3\u8996",
+    "pantau jadwal pelajaran": "\u6642\u9593\u5272\u76e3\u8996",
+    "permasalahan siswa": "\u751f\u5f92\u306e\u554f\u984c",
+    "mode pantau": "\u76e3\u8996\u30e2\u30fc\u30c9",
+  },
+  de: {
+    dashboard: "Dashboard",
+    keluar: "Abmelden",
+    menu: "Men\u00fc",
+    tutup: "Schlie\u00dfen",
+    bahasa: "Sprache",
+    "pilih bahasa tampilan aplikasi": "W\u00e4hlen Sie die Anzeigesprache der Anwendung",
+    "selamat datang": "Willkommen",
+    "memuat data": "Daten werden geladen...",
+    "belum ada data": "Noch keine Daten.",
+    "belum ada aktivitas": "Keine Aktivit\u00e4ten.",
+    edit: "Bearbeiten",
+    hapus: "L\u00f6schen",
+    simpan: "Speichern",
+    "total pengguna": "Benutzer gesamt",
+    "total kelas": "Klassen gesamt",
+    terdaftar: "Registriert",
+    guru: "Lehrer",
+    pengajar: "Unterrichtet",
+    "kelola pengguna": "Benutzer verwalten",
+    "distribusi pengguna per role": "Benutzerverteilung nach Rolle",
+    "aktivitas terbaru": "Letzte Aktivit\u00e4ten",
+    orang: "Personen",
+    "kelas diajar": "Unterrichtete Klassen",
+    "total siswa": "Sch\u00fcler gesamt",
+    materi: "Materialien",
+    tugas: "Aufgaben",
+    "ujian / latihan": "Pr\u00fcfungen / \u00dcbungen",
+    "rekap absensi": "Anwesenheits\u00fcbersicht",
+    hadir: "Anwesend",
+    izin: "Entschuldigt",
+    sakit: "Krank",
+    alpa: "Abwesend",
+    "total tugas": "Aufgaben gesamt",
+    "ujian tersedia": "Verf\u00fcgbare Pr\u00fcfungen",
+    "tugas dikumpul": "Abgegebene Aufgaben",
+    "rata nilai": "Durchschnittsnote",
+    "rekap kehadiran": "Anwesenheits\u00fcbersicht",
+    "ujian online": "Online-Pr\u00fcfungen",
+    "ujian aktif": "Aktive Pr\u00fcfungen",
+    "pengaturan sistem": "Systemeinstellungen",
+    "atur identitas sekolah, tahun ajaran, dan semester": "Schulidentit\u00e4t, Schuljahr und Semester festlegen.",
+    "identitas sekolah, tahun ajaran, dan semester aktif": "Schulidentit\u00e4t, Schuljahr und aktives Semester.",
+    "nama sekolah": "Schulname",
+    alamat: "Adresse",
+    "tahun ajaran aktif": "Aktives Schuljahr",
+    "semester aktif": "Aktives Semester",
+    "memuat pengaturan": "Einstellungen werden geladen...",
+    menyimpan: "Speichern...",
+    "simpan pengaturan": "Einstellungen speichern",
+    "informasi aplikasi": "Anwendungsinformationen",
+    "manajemen user": "Benutzerverwaltung",
+    "data siswa": "Sch\u00fclerdaten",
+    "data guru": "Lehrerdaten",
+    kelas: "Klassen",
+    jurusan: "Fachrichtungen",
+    "mata pelajaran": "Unterrichtsf\u00e4cher",
+    "monitor pembelajaran": "Lernmonitor",
+    "pantau akun": "Kontenkontrolle",
+    "riwayat aktivitas": "Aktivit\u00e4tsverlauf",
+    laporan: "Berichte",
+    pengumuman: "Ank\u00fcndigungen",
+    pengaturan: "Einstellungen",
+    "backup & pemulihan": "Backup & Wiederherstellung",
+    "panel administrator": "Administrator-Panel",
+    "siswa di kelas saya": "Sch\u00fcler in meiner Klasse",
+    absensi: "Anwesenheit",
+    asesmen: "Bewertung",
+    "upload materi": "Materialien hochladen",
+    "latihan soal / ujian": "\u00dcbungen / Pr\u00fcfungen",
+    "download nilai": "Noten herunterladen",
+    "panel guru": "Lehrer-Panel",
+    "tugas / proyek": "Aufgaben / Projekte",
+    "panel siswa": "Sch\u00fcler-Panel",
+    "kinerja guru": "Lehrerleistung",
+    "tugas & materi": "Aufgaben & Materialien",
+    "pantau ujian online": "Online-Pr\u00fcfungsmonitor",
+    "pantau jadwal pelajaran": "Stundenplan-Monitor",
+    "permasalahan siswa": "Sch\u00fclerprobleme",
+    "mode pantau": "\u00dcberwachungsmodus",
+  },
+};
+
+const KUNCI_PENYIMPANAN = "lms_bahasa";
+const PEMANTAU_SIFAR = new Set();
+
+// Hook bahasa aktif (client-side)
+export function useBahasa() {
+  // Baca pilihan tersimpan saat state pertama kali dibuat (client-side).
+  // Fungsi pembaca dipisah agar tidak double-read.
+  const baca = useCallback(() => {
+    if (typeof window === "undefined") return "id";
+    const simpan = window.localStorage.getItem(KUNCI_PENYIMPANAN);
+    return simpan && KAMUS[simpan] ? simpan : "id";
+  }, []);
+
+  const [kode, setKode] = useState(baca);
+
+  // Sinkron saat tab lain mengubah bahasa, dan setelah mount
+  useEffect(() => {
+    const sinkron = () => setKode(baca());
+    window.addEventListener("storage", sinkron);
+    window.addEventListener("lms:bahasa", sinkron);
+    return () => {
+      window.removeEventListener("storage", sinkron);
+      window.removeEventListener("lms:bahasa", sinkron);
+    };
+  }, [baca]);
+
+  const ubah = useCallback(
+    (k) => {
+      if (!KAMUS[k]) return;
+      window.localStorage.setItem(KUNCI_PENYIMPANAN, k);
+      setKode(k);
+      // Beri tahu semua komponen lain agar ikut berubah
+      window.dispatchEvent(new Event("lms:bahasa"));
+    },
+    []
+  );
+
+  const t = useCallback(
+    (teks) => KAMUS[kode]?.[String(teks).toLowerCase()] || teks,
+    [kode]
+  );
+
+  return { bahasa: kode, ubahBahasa: ubah, t };
+}
+
+// Ambil label terjemahan langsung (tanpa hook)
+export function ambilLabel(bahasa, label) {
+  return KAMUS[bahasa]?.[String(label).toLowerCase()] || label;
+}

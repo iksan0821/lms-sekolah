@@ -114,7 +114,7 @@ export default function TugasSiswa() {
     setRows(d.data || []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => { queueMicrotask(load); }, []);
 
   function buka(t) {
     setForm({
