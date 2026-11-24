@@ -22,6 +22,15 @@ export default function LoginClient() {
   const [tingkat, setTingkat] = useState("");
   const [jurusanId, setJurusanId] = useState("");
   const [opsi, setOpsi] = useState({ jurusan: [], tingkat: [] });
+  const [mode, setMode] = useState("masuk"); // "masuk" | "daftar"
+  const [daftar, setDaftar] = useState({
+    nama: "",
+    username: "",
+    email: "",
+    password: "",
+    konfirmasi: "",
+    jenis_kelamin: "",
+  });
 
   // Muat opsi kelas (tingkat) & jurusan untuk form login siswa.
   useEffect(() => {
@@ -78,13 +87,54 @@ export default function LoginClient() {
     }
   }
 
-  const demo = [
-    { role: "Admin", u: "admin", p: "admin123", r: "admin" },
-    { role: "Kepsek", u: "kepsek", p: "kepsek123", r: "kepsek" },
-    { role: "Kurikulum", u: "kurikulum", p: "kurikulum123", r: "kurikulum" },
-    { role: "Guru", u: "guru", p: "guru123", r: "guru" },
-    { role: "Siswa", u: "siswa", p: "siswa123", r: "siswa" },
-  ];
+  async function handleDaftar(e) {
+    e.preventDefault();
+    setError("");
+    const { nama, username, password, konfirmasi } = daftar;
+    if (!nama || !username || !password) {
+      setError("Nama, username, dan password wajib diisi.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password minimal 6 karakter.");
+      return;
+    }
+    if (password !== konfirmasi) {
+      setError("Konfirmasi password tidak sama.");
+      return;
+    }
+    if (!tingkat || !jurusanId) {
+      setError("Kelas (tingkat) dan jurusan wajib dipilih.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/daftar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama,
+          username,
+          email: daftar.email,
+          password,
+          tingkat,
+          jurusan_id: jurusanId,
+          jenis_kelamin: daftar.jenis_kelamin || null,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        setError(data.message || "Pendaftaran gagal.");
+        setLoading(false);
+        return;
+      }
+      router.push(data.redirect || "/siswa");
+      router.refresh();
+    } catch {
+      setError("Tidak dapat terhubung ke server.");
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
@@ -99,7 +149,7 @@ export default function LoginClient() {
       </div>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={mode === "daftar" ? handleDaftar : handleSubmit}
         className="rounded-2xl bg-white p-6 shadow-xl"
       >
         {error && (
@@ -109,7 +159,7 @@ export default function LoginClient() {
         )}
 
         {/* Tab pilih peran login. Siswa punya tambahan field kelas & jurusan. */}
-        <div className="mb-2">
+        <div className={`mb-2 ${mode === "daftar" ? "hidden" : ""}`}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
             Masuk Sebagai
           </p>
@@ -139,44 +189,131 @@ export default function LoginClient() {
           <p className="mt-2 text-xs text-slate-400">{ROLE_TABS.find((t) => t.value === role)?.deskripsi}</p>
         </div>
 
-        <div className="mb-4">
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Username / Email
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Masukkan username"
-            autoComplete="username"
-            required
-            className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-          />
-        </div>
+        {mode === "daftar" ? (
+          <>
+            <div className="mb-4">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Nama Lengkap *
+              </label>
+              <input
+                type="text"
+                value={daftar.nama}
+                onChange={(e) => setDaftar({ ...daftar, nama: e.target.value })}
+                placeholder="Masukkan nama lengkap"
+                required
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Username *
+              </label>
+              <input
+                type="text"
+                value={daftar.username}
+                onChange={(e) => setDaftar({ ...daftar, username: e.target.value })}
+                placeholder="Pilih username"
+                required
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Email (opsional)
+              </label>
+              <input
+                type="email"
+                value={daftar.email}
+                onChange={(e) => setDaftar({ ...daftar, email: e.target.value })}
+                placeholder="email@contoh.com"
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Jenis Kelamin
+              </label>
+              <select
+                value={daftar.jenis_kelamin}
+                onChange={(e) => setDaftar({ ...daftar, jenis_kelamin: e.target.value })}
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              >
+                <option value="">-- Pilih (opsional) --</option>
+                <option value="L">Laki-laki</option>
+                <option value="P">Perempuan</option>
+              </select>
+            </div>
+            <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  value={daftar.password}
+                  onChange={(e) => setDaftar({ ...daftar, password: e.target.value })}
+                  placeholder="Min. 6 karakter"
+                  required
+                  className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Konfirmasi Password *
+                </label>
+                <input
+                  type="password"
+                  value={daftar.konfirmasi}
+                  onChange={(e) => setDaftar({ ...daftar, konfirmasi: e.target.value })}
+                  placeholder="Ulangi password"
+                  required
+                  className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="mb-4">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Username / Email
+              </label>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Masukkan username"
+                autoComplete="username"
+                required
+                className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+              />
+            </div>
 
-        <div className="mb-6">
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Masukkan password"
-              autoComplete="current-password"
-              required
-              className="w-full rounded-lg border-slate-300 px-4 py-2.5 pr-12 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-brand"
-            >
-              {showPassword ? "Sembunyi" : "Lihat"}
-            </button>
-          </div>
-        </div>
+            <div className="mb-6">
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan password"
+                  autoComplete="current-password"
+                  required
+                  className="w-full rounded-lg border-slate-300 px-4 py-2.5 pr-12 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-500 hover:text-brand"
+                >
+                  {showPassword ? "Sembunyi" : "Lihat"}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
 
         {isSiswa && (
           <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -217,44 +354,53 @@ export default function LoginClient() {
           </div>
         )}
 
+        {mode === "daftar" && (
+          <div className="mb-3 rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-dark">
+            Pilih kelas dan jurusan di bawah, sistem akan otomatis menempatkan
+            Anda di kelas dengan siswa paling sedikit.
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading}
           className="w-full rounded-lg brand-gradient px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {loading ? "Memproses..." : "Masuk"}
+          {loading ? "Memproses..." : mode === "daftar" ? "Daftar" : "Masuk"}
         </button>
       </form>
 
-      <div className="mt-6 rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
-        <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-brand-100/80">
-          Akun Demo (klik untuk isi otomatis)
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {demo.map((d) => (
+      <div className="mt-6 text-center">
+        {mode === "masuk" ? (
+          <p className="text-sm text-brand-100/80">
+            Belum punya akun siswa?{" "}
             <button
-              key={d.u}
               type="button"
               onClick={() => {
-                setUsername(d.u);
-                setPassword(d.p);
-                setRole(d.r);
-                if (d.r !== "siswa") {
-                  setTingkat("");
-                  setJurusanId("");
-                }
+                setMode("daftar");
+                setRole("siswa");
                 setError("");
               }}
-              className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                role === d.r
-                  ? "border-white bg-white text-brand-dark"
-                  : "border-white/30 bg-white/10 text-white/80 hover:border-white/60 hover:bg-white/20 hover:text-white"
-              }`}
+              className="font-semibold text-white underline underline-offset-2 hover:text-brand-100"
             >
-              {d.role}: {d.u}
+              Daftar di sini
             </button>
-          ))}
-        </div>
+          </p>
+        ) : (
+          <p className="text-sm text-brand-100/80">
+            Sudah punya akun?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                setMode("masuk");
+                setError("");
+              }}
+              className="font-semibold text-white underline underline-offset-2 hover:text-brand-100"
+            >
+              Masuk di sini
+            </button>
+          </p>
+        )}
       </div>
 
       <p className="mt-6 text-center text-xs text-white/60">
