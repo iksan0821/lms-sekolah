@@ -13,12 +13,11 @@ export async function POST(request) {
       username,
       email,
       password,
-      tingkat,
-      jurusan_id,
+      kelas_id,
       jenis_kelamin,
     } = await request.json();
 
-    if (!nama || !username || !password || !tingkat || !jurusan_id) {
+    if (!nama || !username || !password || !kelas_id) {
       return NextResponse.json(
         { success: false, message: "Semua field bertanda * wajib diisi." },
         { status: 400 },
@@ -50,21 +49,21 @@ export async function POST(request) {
       );
     }
 
-    // Validasi kombinasi tingkat & jurusan
+    // Validasi kelas yang dipilih harus ada di sistem
     const kelasRows = await query(
       `SELECT k.id, k.nama, k.tingkat, k.jurusan_id, j.nama AS jurusan
        FROM kelas k
        LEFT JOIN jurusan j ON j.id = k.jurusan_id
-       WHERE k.tingkat = ? AND k.jurusan_id = ?
-       ORDER BY k.nama`,
-      [String(tingkat), jurusan_id],
+       WHERE k.id = ?
+       LIMIT 1`,
+      [kelas_id],
     );
 
     if (kelasRows.length === 0) {
       return NextResponse.json(
         {
           success: false,
-          message: "Kombinasi kelas dan jurusan belum tersedia. Hubungi admin.",
+          message: "Kelas belum tersedia. Hubungi admin.",
         },
         { status: 400 },
       );
@@ -82,18 +81,8 @@ export async function POST(request) {
       );
     }
 
-    // Pilih kelas dengan siswa paling sedikit agar sebaran merata
-    const kelasTerisi = await query(
-      `SELECT kelas_id, COUNT(*) AS jumlah
-       FROM siswa
-       WHERE kelas_id IN (${kelasRows.map(() => "?").join(",")})
-       GROUP BY kelas_id`,
-      kelasRows.map((k) => k.id),
-    );
-    const jumlahMap = new Map(kelasTerisi.map((r) => [r.kelas_id, r.jumlah]));
-    const kelasInfo = kelasRows.reduce((best, k) =>
-      (jumlahMap.get(k.id) || 0) < (jumlahMap.get(best.id) || 0) ? k : best,
-    );
+    // Kelas sudah dipilih spesifik oleh siswa, tidak perlu auto-assign lagi
+    const kelasInfo = kelasRows[0];
 
     const roleIdRows = await query(
       "SELECT id FROM roles WHERE slug = 'siswa' LIMIT 1",

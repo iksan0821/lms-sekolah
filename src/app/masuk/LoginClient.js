@@ -21,8 +21,10 @@ export default function LoginClient() {
   const [role, setRole] = useState("admin");
   const [tingkat, setTingkat] = useState("");
   const [jurusanId, setJurusanId] = useState("");
-  const [opsi, setOpsi] = useState({ jurusan: [], tingkat: [] });
+  const [opsi, setOpsi] = useState({ jurusan: [], tingkat: [], kelas: [] });
   const [mode, setMode] = useState("masuk"); // "masuk" | "daftar"
+  const [kelasDipilih, setKelasDipilih] = useState("");
+  const [program, setProgram] = useState(""); // "Reguler" | "Plus"
   const [daftar, setDaftar] = useState({
     nama: "",
     username: "",
@@ -40,8 +42,17 @@ export default function LoginClient() {
       .catch(() => {});
   }, []);
 
-  const isSiswa = role === "siswa";
-  const tingkatOpsi = opsi.tingkat.length ? opsi.tingkat : ["10", "11", "12"];
+  const isSiswa = role === "siswa" || mode === "daftar";
+  // Pilihan tingkat kelas 1-10 (untuk mode daftar); mode login pakai opsi dari DB.
+  const tingkatAngka = Array.from({ length: 10 }, (_, i) => String(i + 1));
+  const tingkatOpsi = mode === "daftar" ? tingkatAngka : opsi.tingkat.length ? opsi.tingkat : ["10", "11", "12"];
+  // Kelas spesifik (mis. "12 PPLG 2") tersedia hanya saat mode daftar.
+  const kelasOpsi = (opsi.kelas || []).filter(
+    (k) =>
+      (!tingkat || String(k.tingkat) === String(tingkat)) &&
+      (!jurusanId || String(k.jurusan_id) === String(jurusanId)) &&
+      (!program || k.nama.toLowerCase().includes(program.toLowerCase()))
+  );
   // Fallback bila endpoint opsi belum/tidak memuat data, agar jurusan tetap bisa dipilih.
   const jurusanOpsi = opsi.jurusan.length
     ? opsi.jurusan
@@ -103,8 +114,8 @@ export default function LoginClient() {
       setError("Konfirmasi password tidak sama.");
       return;
     }
-    if (!tingkat || !jurusanId) {
-      setError("Kelas (tingkat) dan jurusan wajib dipilih.");
+    if (!tingkat || !jurusanId || !kelasDipilih || !program) {
+      setError("Tingkat, jurusan, program, dan kelas wajib dipilih.");
       return;
     }
     setLoading(true);
@@ -117,8 +128,7 @@ export default function LoginClient() {
           username,
           email: daftar.email,
           password,
-          tingkat,
-          jurusan_id: jurusanId,
+          kelas_id: kelasDipilih,
           jenis_kelamin: daftar.jenis_kelamin || null,
         }),
       });
@@ -319,17 +329,22 @@ export default function LoginClient() {
           <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                Kelas (Tingkat)
+                {mode === "daftar" ? "Tingkat" : "Kelas (Tingkat)"}
               </label>
               <select
                 value={tingkat}
-                onChange={(e) => setTingkat(e.target.value)}
+                onChange={(e) => {
+                  setTingkat(e.target.value);
+                  setKelasDipilih("");
+                }}
                 required
                 className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
               >
                 <option value="">-- Pilih Tingkat --</option>
                 {tingkatOpsi.map((t) => (
-                  <option key={t} value={t}>Kelas {t}</option>
+                  <option key={t} value={t}>
+                    {mode === "daftar" ? t : `Kelas ${t}`}
+                  </option>
                 ))}
               </select>
             </div>
@@ -339,7 +354,10 @@ export default function LoginClient() {
               </label>
               <select
                 value={jurusanId}
-                onChange={(e) => setJurusanId(e.target.value)}
+                onChange={(e) => {
+                  setJurusanId(e.target.value);
+                  setKelasDipilih("");
+                }}
                 required
                 className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
               >
@@ -351,13 +369,58 @@ export default function LoginClient() {
                 ))}
               </select>
             </div>
+            {mode === "daftar" && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Program
+                </label>
+                <select
+                  value={program}
+                  onChange={(e) => {
+                    setProgram(e.target.value);
+                    setKelasDipilih("");
+                  }}
+                  required
+                  className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                >
+                  <option value="">-- Pilih Program --</option>
+                  <option value="Reguler">Reguler</option>
+                  <option value="Plus">Plus</option>
+                </select>
+              </div>
+            )}
+            {mode === "daftar" && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Kelas
+                </label>
+                <select
+                  value={kelasDipilih}
+                  onChange={(e) => setKelasDipilih(e.target.value)}
+                  required
+                  className="w-full rounded-lg border-slate-300 px-4 py-2.5 text-sm text-slate-800 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+                >
+                  <option value="">
+                    {tingkat && jurusanId && program
+                      ? "-- Pilih Kelas --"
+                      : "-- Pilih tingkat, jurusan & program dulu --"}
+                  </option>
+                  {kelasOpsi.map((k) => (
+                    <option key={k.id} value={k.id}>
+                      {k.nama}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         )}
 
         {mode === "daftar" && (
           <div className="mb-3 rounded-lg bg-brand-50 px-3 py-2 text-xs text-brand-dark">
-            Pilih kelas dan jurusan di bawah, sistem akan otomatis menempatkan
-            Anda di kelas dengan siswa paling sedikit.
+            Pilih tingkat (angka), jurusan, program (Reguler/Plus), lalu kelas —
+            contoh &quot;12 PPLG 2&quot;.
+            Anda akan langsung terdaftar di kelas tersebut.
           </div>
         )}
 
@@ -379,6 +442,10 @@ export default function LoginClient() {
               onClick={() => {
                 setMode("daftar");
                 setRole("siswa");
+                setTingkat("");
+                setJurusanId("");
+                setKelasDipilih("");
+                setProgram("");
                 setError("");
               }}
               className="font-semibold text-white underline underline-offset-2 hover:text-brand-100"
@@ -393,6 +460,7 @@ export default function LoginClient() {
               type="button"
               onClick={() => {
                 setMode("masuk");
+                setKelasDipilih("");
                 setError("");
               }}
               className="font-semibold text-white underline underline-offset-2 hover:text-brand-100"
